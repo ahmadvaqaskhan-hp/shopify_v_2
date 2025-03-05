@@ -1,0 +1,65 @@
+{% assign container_id = 'GTM-NW4ZGV9' %}
+
+{% unless settings.gtm_id == blank %}
+  {% assign container_id = settings.gtm_id %}
+{% endunless %}
+
+{% unless container_id == false %}
+  {% capture page_view_scripts %}
+    {% render 'datalayer-page-view' %}
+  {% endcapture %}
+
+  {% assign page_view_scripts = page_view_scripts | remove: '<script>' | remove: '</script>' %}
+
+  {%- capture raw_script -%}
+    var loadGTM=function(id){
+    var script=document.createElement('script');
+    script.innerHTML =
+    "(function(w,d,s,DL,i){\
+    w[DL]=w[DL]||[];\
+    w[DL].push({'gtm.start':new Date().getTime(),event:'gtm.js'});\
+    var f=d.getElementsByTagName(s)[0],\
+    j=d.createElement(s);\
+    j.async=true;\
+    j.src='https://www.googletagmanager.com/gtm.js?id='+i+'&l=dataLayer';\
+    f.parentNode.insertBefore(j,f);\
+    })(window,document,'script','dataLayer','"+id+"');",
+    document.getElementsByTagName(document.body?'body':'head')[0].appendChild(script);
+    }
+
+    if(!window.dataLayer||window.dataLayer.constructor!=Array)dataLayer=[];
+    {% unless request.path contains 'thank_you' or request.path contains '/orders/' %}
+      {{ page_view_scripts }}
+      dataLayer.push({
+        event:'pb.onOptIn',
+        callback:function() {
+          loadGTM('{{ settings.gtm_udl_id }}');
+          loadGTM('{{ container_id }}');
+        },
+        type:3
+      });
+    {% endunless %}
+  {%- endcapture -%}
+
+
+  {% if gtm == 'raw' %}
+    {{ raw_script }}
+  {% endif %}
+
+  {% if gtm == 'head-script' %}
+    <!-- Google Tag Manager -->
+    <script>
+      {{ raw_script }}
+    </script>
+    <!-- End Google Tag Manager -->
+  {% endif %}
+
+  {% if gtm == 'body-script' %}
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ container_id }}"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ settings.gtm_udl_id }}"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+  {% endif %}
+{% endunless %}

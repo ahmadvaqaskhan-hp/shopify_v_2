@@ -1,0 +1,94 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: announcement-bar-settings (announcement-bar-settings)
+  - Static section.
+------------------------------------------------------------------------------
+{% endcomment %}
+{% capture announcement %}
+{
+  enable: {{ section.settings.show_announcement | json | escape }},
+  layout: {{ section.settings.announcement_bar_layout | json | escape }},
+  timing: {{ section.settings.announcement_timing | json | escape }},
+}
+{% endcapture %}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+>
+  <announcement-bar-settings
+    v-show="getComponentVisible('announcement-bar-settings')"
+    v-cloak
+    :liquid="{
+      sectionId: {{ section.id | json | escape }}
+    }"
+    :blocks="[
+      {% for block in section.blocks %}
+        {
+          title: {{ block.settings.title | json | escape }},
+          link: {{ block.settings.link | json | escape }}
+        } {% unless forloop.last %}
+          ,
+        {% endunless %}
+      {% endfor %}
+    ]"
+    :announcement="{{ announcement }}"
+  ></announcement-bar-settings>
+</section>
+
+{% schema %}
+{
+  "name": "Announcement Bar Settings",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Announcement bar"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_announcement",
+      "default": true,
+      "label": "Show Announcement Bar"
+    },
+    {
+      "type": "text",
+      "id": "announcement_timing",
+      "default": "2000",
+      "label": "Announcement Timing"
+    },
+    {
+      "type": "select",
+      "id": "announcement_bar_layout",
+      "label": "Announcement layout",
+      "default": "left",
+      "options": [
+        {
+          "label": "Left",
+          "value": "left"
+        },
+        {
+          "label": "Center",
+          "value": "center"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Announcement-Bar-Settings"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "announcement",
+      "name": "Announcement item",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "title",
+          "label": "Announcement title"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

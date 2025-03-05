@@ -1,0 +1,75 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Snippet: Quantity selector
+  - Loading placeholder only.
+
+  @param {Number} [animation_delay] - Used to delay animation, useful for
+  loading placeholders.
+  @param {String} [block_class] - Block level class to apply to all elements.
+  @param {String} [class] - Additional classes.
+  @param {String} [name] - Name of quantity input.
+  @param {Number} quantity - Quantity to display for loading state.
+  @param {Boolean} [readonly] - Quantity input is readonly.
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign quantity_class = 'quantity-selector '
+  assign quantity_button_class = 'quantity-selector__button is-disabled '
+  assign quantity_control_class = 'quantity-selector__control quantity-selector__control--type '
+  assign quantity_input_class = 'quantity-selector__input '
+  assign readonly = readonly | default: true, allow_false: true
+
+  if block_class
+    assign quantity_class = quantity_class | append: '#__quantity-selector ' | replace: '#', block_class
+    assign quantity_button_class = quantity_button_class | append: '#__quantity-button ' | replace: '#', block_class
+    assign quantity_control_class = quantity_control_class | append: '#__quantity-control ' | replace: '#', block_class
+    assign quantity_input_class = quantity_input_class | append: '#__quantity-input ' | replace: '#', block_class
+  endif
+
+  if large
+    assign quantity_class = quantity_class | append: 'quantity-selector--large '
+  endif
+-%}
+
+<div
+  class="
+    {{ quantity_class | strip }}
+    {{ class }}
+    liquid
+  "
+  style="animation-delay: {{ animation_delay | default: 0 }}s;"
+>
+  <div class="{{ quantity_control_class | replace: 'type', 'button' | strip }}">
+    <button
+      class="{{ quantity_button_class | strip }}"
+      type="button"
+      aria-label="{{ 'cart.line_item.decrease_quantity' | t }}"
+    >
+      {% render 'icon-misc' with icon: 'minus' %}
+    </button>
+  </div>
+
+  <div class="{{ quantity_control_class | replace: 'type', 'input' | strip }}">
+    <input
+      class="{{ quantity_input_class | strip }}"
+      name="{{ name | default: 'quantity' }}"
+      pattern="[0-9]*"
+      {% if readonly %}
+        readonly
+      {% endif %}
+      tabindex="-1"
+      type="number"
+      value="{{ quantity | default: 1 }}"
+    >
+  </div>
+
+  <div class="{{ quantity_control_class | replace: 'type', 'button' | strip }}">
+    <button
+      class="{{ quantity_button_class | strip }}"
+      type="button"
+      aria-label="{{ 'cart.line_item.increase_quantity' | t }}"
+    >
+    {% render 'icon-misc' with icon: 'plus' %}
+    </button>
+  </div>
+</div>

@@ -1,0 +1,167 @@
+{%- comment -%}
+----------------------------------------------------------------------------
+  Snippet: Custom Content
+  - Outputs the page builder content where rendered.
+  - Update the case statement below to fit with the theme's unique blocks.
+----------------------------------------------------------------------------
+{%- endcomment -%}
+{% unless request.design_mode %}
+  {% assign draft_mode = 'cc_' %}
+  {% for attribute in cart.attributes %}
+    {% assign key = attribute | first %}
+    {% assign value = attribute | last %}
+    {% if key == 'draftMode' and value == 'draft' %}
+      {% assign draft_mode = 'ccd_' %}
+      <style>
+        .draft-mode__link {
+          background: rgba(44, 110, 203, 1);
+          border-radius: 0 0 8px 8px;
+          box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+          color: rgba(255, 255, 255);
+          cursor: pointer;
+          font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+          font-size: 14px;
+          font-weight: 600;
+          height: 24px;
+          left: -43px;
+          line-height: 1.5;
+          position: fixed;
+          text-align: center;
+          top: 140px;
+          transform: rotate(-90deg);
+          width: 124px;
+          z-index: 10000000001;
+        }
+
+        .draft-mode__link:hover, .draft-mode__link:hover ~ .draft-mode__bar {
+          background: rgb(31, 81, 153);
+        }
+
+        .draft-mode__bar {
+          background: rgba(44, 110, 203, 1);
+          box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+          height: 100%;
+          left: 0;
+          position: fixed;
+          top: 0;
+          width: 7px;
+          z-index: 10000000001;
+        }
+      </style>
+      <a href="/pages/custom-content-builder?path={{ request.path }}" title="Close">
+        <div class="draft-mode__link">
+          <svg width="9" height="9" viewBox="0 0 9 9" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M0.757135 7.50043C0.414288 7.84333 0.414288 8.39929 0.757135 8.7422C1.09998 9.0851 1.65584 9.0851 1.99869 8.7422L4.49921 6.24125L7.0006 8.74307C7.34345 9.08597 7.89931 9.08597 8.24216 8.74307C8.585 8.40016 8.58501 7.8442 8.24216 7.5013L5.74077 4.99948L8.24216 2.49767C8.585 2.15477 8.585 1.59881 8.24216 1.2559C7.89931 0.913 7.34345 0.912999 7.0006 1.2559L4.49921 3.75772L1.99869 1.25677C1.65584 0.913869 1.09998 0.913869 0.757135 1.25677C0.414288 1.59968 0.414288 2.15564 0.757135 2.49854L3.25766 4.99948L0.757135 7.50043Z" fill="white"/>
+          </svg>
+          &nbsp;Draft Mode
+        </div>
+        <div class="draft-mode__bar"></div>
+      </a>
+    {% endif %}
+  {% endfor %}
+
+  {% assign metafield_lang = request.locale.iso_code %}
+
+  {% assign metafield_namespace = draft_mode |
+    append: metafield_lang |
+    append: "_" |
+    append: settings.display_metafield_namespace
+  %}
+
+  {% assign object_metafield = [template.name].metafields %}
+  {% assign section = object_metafield[metafield_namespace].schema.value.section %}
+
+  {% if section == blank %}
+    {% assign section = object_metafield[metafield_namespace].schema.section %}
+  {% endif %}
+
+  {% if section == blank %}
+    {% for locale in shop.published_locales %}
+      {% if locale.primary == true %}
+        {% assign metafield_lang = locale.iso_code %}
+      {% endif %}
+    {% endfor %}
+
+    {% assign metafield_namespace = 'cc_' |
+      append: metafield_lang |
+      append: "_" |
+      append: settings.display_metafield_namespace
+    %}
+
+    {% assign section = [template.name].metafields[metafield_namespace].schema.value.section %}
+    {% if section == blank %}
+      {% assign section = [template.name].metafields[metafield_namespace].schema.section %}
+    {% endif %}
+  {% endif %}
+{% endunless %}
+
+{%- comment -%}
+----------------------------------------------------------------------------
+  Update the below to match the theme's blocks.
+  - Each "section" in the page builder needs to be a snippet.
+----------------------------------------------------------------------------
+{%- endcomment -%}
+{% for block in section.blocks %}
+  {% if include_blocks %}
+    {% unless include_blocks contains block.type %}
+      {% continue %}
+    {% endunless %}
+  {% endif %}
+
+  {% if exclude_blocks %}
+    {% if exclude_blocks contains block.type %}
+      {% continue %}
+    {% endif %}
+  {% endif %}
+
+  {% case block.type %}
+    {%- when 'hero-banner-block' -%}
+      {%- render 'hero-banner-block' block: block, section: section, block_id: forloop.index -%}
+
+    {%- when 'full-width-image-video' -%}
+      {%- render 'cct-full-width-banner' block: block, section: block -%}
+
+    {%- when 'image-banner-text-block' -%}
+      {%- render 'image-banner' block: block, section: block -%}
+
+    {%- when 'category-tiles-block' -%}
+      {%- render 'cct-category-tiles' block: block, section: section -%}
+
+    {%- when 'usps-block' -%}
+      {%- render 'usps-block' block: block, section: section -%}
+
+    {%- when 'product-carousel-block' -%}
+      {%- render 'product-carousel' block: block, section: section -%}
+
+    {%- when 'videos-block' -%}
+      {%- render 'video-block' block: block, section: section -%}
+
+    {%- when 'title-description-block' -%}
+      {%- render 'title-with-description' block: block, section: section -%}
+
+    {%- when 'dual-banners-block' -%}
+      {%- render 'cct-dual-banners' block: block, section: section -%}
+
+    {%- when 'logo-grid-block' -%}
+      {%- render 'logo-grid' block: block, section: section -%}
+
+    {%- when 'gamers-banner-grid-block' -%}
+      {%- render 'gamers-banner-grid' block: block, section: section -%}
+
+    {%- when 'product-accordion-block' -%}
+      {%- render 'cct-product-accordion' block: block, section: section -%}
+
+    {%- when 'gamer-bio-block' -%}
+      {%- render 'cct-gamer-bio' block: block, section: block -%}
+
+    {%- when 'gamer-gallery-block' -%}
+      {%- render 'gamer-gallery-block' block: block, section: section -%}
+
+    {%- when 'reviews-carousel-block' -%}
+      {%- render 'cct-reviews-carousel' block: block, section: section -%}
+
+    {%- when 'collection-banner' -%}
+      {%- render 'cct-collection-banner' block: block, section: section -%}
+
+  {%- endcase -%}
+{%- endfor -%}

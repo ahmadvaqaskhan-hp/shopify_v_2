@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[1456],{3113:function(e,n,a){a.r(n),a.d(n,{default:function(){return t}});var t={name:"ShippingMetadata"}}}]);
+//# sourceMappingURL=component.shipping-metadata.js.map?v=1733162424563

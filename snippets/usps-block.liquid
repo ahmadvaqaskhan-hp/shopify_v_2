@@ -1,0 +1,156 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet: USPS Block (usps)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.usps.css' | asset_url | stylesheet_tag }}
+
+<section
+  id="usps-{{ block.id }}"
+  class="usps"
+>
+  <div class="usps__wrapper">
+    {% for i in (1..4) %}
+      {% assign block_subtitle = 'subtitle_' | append: i %}
+      {% assign icon = 'icon_' | append: i %}
+      {% assign icon_alt_text = 'icon_alt_text_' | append: i %}
+
+      {% capture image_attributes %}
+        alt="{{ block.settings[icon_alt_text] }}"
+      {% endcapture %}
+
+      {% if block.settings[block_subtitle] != empty %}
+        <div class="usps__item">
+          <div class="usps__item-wrapper">
+            <div class="usps__image-wrapper">
+              {% render 'responsive-card-image' with
+                image: block.settings[icon],
+                image_attributes: image_attributes,
+                max_width: 50,
+                max_height: 50,
+              %}
+            </div>
+            <div class="usps__item-subtitle">
+              {{ block.settings[block_subtitle] }}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</section>
+
+{%- comment -%}
+  {% raw %}
+    {% schema %}
+      {
+        "settings": [],
+        "templates": [
+          "pages",
+          "products",
+          "collections",
+          "blogs",
+          "articles"
+        ],
+        "block": {
+          "type": "usps-block",
+          "name": "Usps block",
+          "settings": [
+            {
+              "type": "richtext",
+              "id": "subtitle_1",
+              "label": "Description"
+            },
+            {
+              "type": "header",
+              "content": "Icon settings",
+              "info": "Image to be displayed."
+            },
+            {
+              "type": "image_picker",
+              "id": "icon_1",
+              "label": "Icon",
+              "info": "Recommended dimensions (50px x 50px)."
+            },
+            {
+              "type": "text",
+              "id": "icon_alt_text_1",
+              "label": "Alt text",
+              "default": "Alt description for SEO.",
+              "info": "Required for SEO."
+            },
+            {
+              "type": "richtext",
+              "id": "subtitle_2",
+              "label": "Description"
+            },
+            {
+              "type": "header",
+              "content": "Icon settings",
+              "info": "Image to be displayed."
+            },
+            {
+              "type": "image_picker",
+              "id": "icon_2",
+              "label": "Icon",
+              "info": "Recommended dimensions (50px x 50px)."
+            },
+            {
+              "type": "text",
+              "id": "icon_alt_text_2",
+              "label": "Alt text",
+              "default": "Alt description for SEO.",
+              "info": "Required for SEO."
+            },
+            {
+              "type": "richtext",
+              "id": "subtitle_3",
+              "label": "Description"
+            },
+            {
+              "type": "header",
+              "content": "Icon settings",
+              "info": "Image to be displayed."
+            },
+            {
+              "type": "image_picker",
+              "id": "icon_3",
+              "label": "Icon",
+              "info": "Recommended dimensions (50px x 50px)."
+            },
+            {
+              "type": "text",
+              "id": "icon_alt_text_3",
+              "label": "Alt text",
+              "default": "Alt description for SEO.",
+              "info": "Required for SEO."
+            },
+            {
+              "type": "richtext",
+              "id": "subtitle_4",
+              "label": "Description"
+            },
+            {
+              "type": "header",
+              "content": "Icon settings",
+              "info": "Image to be displayed."
+            },
+            {
+              "type": "image_picker",
+              "id": "icon_4",
+              "label": "Icon",
+              "info": "Recommended dimensions (50px x 50px)."
+            },
+            {
+              "type": "text",
+              "id": "icon_alt_text_4",
+              "label": "Alt text",
+              "default": "Alt description for SEO.",
+              "info": "Required for SEO."
+            }
+          ]
+        }
+      }
+    {% endschema %}
+  {% endraw %}
+{%- endcomment -%}

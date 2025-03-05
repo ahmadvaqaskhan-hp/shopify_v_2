@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[8249],{5484:function(n,e,t){t.r(e),t.d(e,{default:function(){return u}});var u={name:"MainListCollections"}}}]);
+//# sourceMappingURL=component.main-list-collections.js.map?v=1733162424563

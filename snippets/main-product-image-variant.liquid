@@ -1,0 +1,13 @@
+{%- liquid
+  assign var_id = false
+  capture variant_id
+    for variant in image.variants
+      if variant.image.id == image.id
+        assign var_id = variant.id
+        break
+      endif
+    endfor
+    echo var_id
+  endcapture
+-%}{{ var_id }}
+

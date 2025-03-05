@@ -1,0 +1,51 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Snippet / Format: Product
+  - Returns product Liquid object formatted as Vue prop data.
+  - Use as a replacement to storefront API queries.
+  - Can be used in a forloop.
+
+  @param {Object} [collection] - Collection Liquid object.
+  @param {Boolean} [full_data] - Render all product data, defaults to true.
+  @param {Object} [forloop] - Forloop Liquid object.
+  @param {Boolean} [media] - Format media array.
+  @param {Object} product - Product Liquid object to format.
+  @returns {Object}
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- capture data -%}
+  available: {{ product.available | json | escape }},
+  compareAtPrice: {% render 'format-price' with price: 'compare_at_price', object: product %},
+  featuredImage: {% render 'format-image' with image: product.featured_image %},
+  handle: {{ product.handle | json | escape }},
+  liquid: {{ true | json | escape }},
+  price: {% render 'format-price' with price: 'price', object: product %},
+  {%- if product.images.size > 1 -%}
+    secondaryImage: {% render 'format-image' with image: product.images[1] %},
+  {%- endif -%}
+  tags: {{ product.tags | json | escape }},
+  title: {{ product.title | json | escape }},
+  type: {{ product.type | json | escape }},
+  url: {{ product.url | within: collection | json | escape }},
+  vendor: {{ product.vendor | json | escape }}
+  {%- unless full_data == false -%},
+    collection: {
+      title: {{ collection.title | json | escape }},
+      url: {{ collection.url | json | escape }}
+    },
+    description: {{ product.description | json | escape }},
+    giftCard: {{ product.gift_card? | json | escape }},
+    hasOnlyDefaultVariant: {{ product.has_only_default_variant | json | escape }},
+    id: {{ product.id | json | escape }},
+    {%- if media -%}
+      media: [{% render 'format-media' for product.media as media, with product: product %}],
+    {%- else -%}
+      images: [{% render 'format-image' for product.images as image %}],
+    {%- endif -%}
+    options: [{% render 'format-option' for product.options_with_values as product_option, with product: product %}],
+    selectedOrFirstAvailableVariant: {% render 'format-variant' with variant: product.selected_or_first_available_variant, product: product%},
+    variants: [{% render 'format-variant' for product.variants as variant, with product: product %}]
+  {%- endunless -%}
+{%- endcapture -%}
+
+{ {{ data | strip | strip_newlines }} }{%- if forloop and forloop.last == false -%},{%- endif -%}

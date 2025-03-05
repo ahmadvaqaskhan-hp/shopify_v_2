@@ -1,0 +1,22 @@
+
+{% if layout == 'password' %}
+<link href="{{ 'layout.password.css' | asset_url }}" media="print" onload="this.media='all'" rel="stylesheet" type="text/css">
+<noscript>
+<link href="{{ 'layout.password.css' | asset_url }}" media="all" rel="stylesheet" type="text/css">
+</noscript>
+{% endif %} {% if layout == 'theme' %}
+<link href="{{ 'layout.theme.css' | asset_url }}" media="print" onload="this.media='all'" rel="stylesheet" type="text/css">
+<noscript>
+<link href="{{ 'layout.theme.css' | asset_url }}" media="all" rel="stylesheet" type="text/css">
+</noscript>
+{% endif %} {% if template.directory == 'customers' %}
+<link href="{{ 'template.customers.css' | asset_url }}" media="print" onload="this.media='all'" rel="stylesheet" type="text/css">
+<noscript>
+<link href="{{ 'template.customers.css' | asset_url }}" media="all" rel="stylesheet" type="text/css">
+</noscript>
+{% endif %} {% if template == 'page' %}
+<link href="{{ 'template.page.css' | asset_url }}" media="print" onload="this.media='all'" rel="stylesheet" type="text/css">
+<noscript>
+<link href="{{ 'template.page.css' | asset_url }}" media="all" rel="stylesheet" type="text/css">
+</noscript>
+{% endif %}

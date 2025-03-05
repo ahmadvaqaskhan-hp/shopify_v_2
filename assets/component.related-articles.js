@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[8948],{4257:function(e,t,n){n.r(t),n.d(t,{default:function(){return u}});var r=n(1797);const a={class:"related-articles"};var s={name:"RelatedArticles",data:()=>({}),mounted(){},methods:{}},u=(0,n(4407).Z)(s,[["render",function(e,t,n,s,u,c){return(0,r.wg)(),(0,r.iD)("div",a)}]])}}]);
+//# sourceMappingURL=component.related-articles.js.map?v=1733162424563

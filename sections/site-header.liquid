@@ -1,0 +1,233 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Component: Site header section
+  - Also add content which needs to be fixed with the header such as the
+    meganav or menu drawer.
+-----------------------------------------------------------------------------
+{% endcomment %}
+{% capture desktop %}
+  [
+    {% for tier1 in linklists[section.settings.desktop].links %}
+      {
+        title: {{ tier1.title | json | escape }},
+        url: {{ tier1.url | json | escape }},
+        handle: {{ tier1.handle | prepend: 'desktop-' | append: '-1-' | append: forloop.index0 | json | escape }},
+        levels: {{ tier1.levels | json | escape }},
+        {% if tier1.levels > 0 %}
+          children: [
+            {% for tier2 in tier1.links %}
+              {
+                title: {{ tier2.title | json | escape }},
+                url: {{ tier2.url | json | escape }},
+                handle: {{ tier2.handle | prepend: 'desktop-' | append: '-2-' | append: forloop.index0 | json | escape }},
+                {% if tier2.levels > 0 %}
+                  children: [
+                    {% for tier3 in tier2.links %}
+                      {
+                        title: {{ tier3.title | json | escape }},
+                        url: {{ tier3.url | json | escape }},
+                        handle: {{ tier3.handle | prepend: 'desktop-' | append: '-3-' | append: forloop.index0 | json | escape }},
+                      },
+                    {% endfor %}
+                  ]
+                {% endif %}
+              },
+            {% endfor %}
+          ]
+        {% endif %}
+      },
+    {% endfor %}
+  ]
+{% endcapture %}
+
+{% capture banners %}
+  [
+    {% for banner in section.blocks %}
+      {
+        index: {{ banner.settings.parent_link | json | escape }},
+        image: {{ banner.settings.image.src | json | escape }},
+        title: {{ banner.settings.title | json | escape }},
+        tagline: {{ banner.settings.tagline | json | escape }},
+        link: {{ banner.settings.link | json | escape }},
+      },
+    {% endfor %}
+  ]
+{% endcapture %}
+
+{% assign announcementBarText = section.settings.announcement_bar_text | replace: '<p>', '' | replace: '</p>', '' %}
+
+{% capture announcement %}
+{
+  enable: {{ section.settings.show_announcement | json | escape }},
+  layout: {{ section.settings.announcement_bar_layout | json | escape }},
+  text: {{ announcementBarText | json | escape }}
+}
+{% endcapture %}
+
+<section aria-labelledby="site-header-title">
+  <site-header
+    v-show="getComponentActive('site-header')"
+    :desktop="{{ desktop }}"
+    :banners="{{ banners }}"
+    :settings="{
+      showSearch: {{ section.settings.show_search }},
+      showArrows: {{ section.settings.show_arrows }},
+    }"
+    :mobile="{
+      handle: {{ section.settings.mobile | json | escape }},
+      itemCount: {{ linklists[section.settings.mobile].links | size | json | escape }},
+    }"
+    v-cloak
+    :announcement="{{ announcement }}"
+  ></site-header>
+
+  {% comment %}
+  ----------------------------------------------------------------------------
+    Loading state.
+  ----------------------------------------------------------------------------
+  {% endcomment %}
+  <div v-if="!getComponentActive('site-header')">
+    <div class="site-header-container" js-site-header="container">
+      <header class="site-header is-loading liquid">
+        {% if section.settings.show_announcement %}
+          {% render 'announcement-bar' with
+            barLayout: section.settings.announcement_bar_layout
+            text: announcementBarText
+          %}
+        {% endif %}
+
+        <div class="site-header__container">
+          <button
+            class="site-header__hamburger icon-button"
+            aria-label="{{ 'general.site_header.menu' | t }}"
+          >
+            <span class="hamburger">
+              {% render 'icon-misc' with icon: 'hamburger' %}
+            </span>
+          </button>
+
+          <a
+            href="{{ routes.root_url }}"
+            class="site-header__logo"
+          >
+            <span class="visually-hidden">
+              {{ shop.name }}
+            </span>
+            {% render 'icon-misc' with icon: 'logo' %}
+          </a>
+
+          <nav class="site-header__nav">
+            <ul class="site-header__nav-list">
+              {% for tier1 in linklists[section.settings.desktop].links %}
+                <li class="site-header__nav-item">
+                  <a
+                    href="{{ tier1.url }}"
+                    class="site-header__nav-link"
+                  >
+                    {{ tier1.title }}
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          </nav>
+
+          <a
+            class="site-header__utility first"
+            href="javascript:void(0)"
+            aria-label="{{ 'search.title' | t }}"
+          >
+            <span class="icon-wrap">
+              {% render 'icon-misc' with icon: 'search' %}
+            </span>
+          </a>
+
+          <a
+            class="
+              site-header__utility
+              {% if cart.item_count > 0 %}indicator{% endif %}
+              {{ cart.item_count }}
+            "
+          >
+            <span class="visually-hidden">
+              {{ cart.item_count }}
+            </span>
+            <span class="icon-wrap">
+              {% render 'icon-misc' with icon: 'cart' %}
+            </span>
+          </a>
+        </div>
+      </header>
+    </div>
+  </div>
+
+  {% render 'menu-drawer' %}
+</section>
+
+{% schema %}
+{
+  "name": "Site Header",
+  "class": "site-header-section",
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "mobile",
+      "label": "Mobile navigation"
+    },
+    {
+      "type": "link_list",
+      "id": "desktop",
+      "label": "Desktop navigation",
+      "default": "main-menu"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": "Show search",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows on megamenu",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "mega_nav",
+      "name": "Mega nav",
+      "settings": [
+        {
+          "type": "number",
+          "id": "parent_link",
+          "label": "Parent link"
+        },
+        {
+          "type": "header",
+          "content": "Featured banner"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title"
+        },
+        {
+          "type": "text",
+          "id": "tagline",
+          "label": "Tagline"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Text link"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

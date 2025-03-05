@@ -1,0 +1,119 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Key features (key-features)
+  - Static section.
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.key-features.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  comment
+    Channel Advisor sends product metafields with a different namespace
+    depending on the store.
+
+    ROW
+    For ROW the namespace is "product" and the value is JSON containing
+    content for each language code.
+
+    E.g.
+    {
+      "ar": "HyperX Pulsefire Dart - ماوس ألعاب لاسلكي (أسود)",
+      "de": "HyperX Pulsefire Dart – Wireless-Gaming-Maus (schwarz)",
+      "en": "HyperX Pulsefire Dart - Wireless Gaming Mouse (Black)"
+      ...
+    }
+
+    CAN / US / UK
+    For other stores the language code is prefixed to the namespace
+    E.g. "en_product", "fr_product"
+  endcomment
+
+  assign namespace = product.metafields.product
+  assign metafield_lang = request.locale.iso_code | downcase
+  assign metafield_namespace = metafield_lang | append: '_product'
+  assign locale_metafields = product.metafields[metafield_namespace]
+
+  comment
+    Fallback to a non-regional locale if no namespace exists for a regional
+    metafield.
+
+    i.e. if en-CA does not exist in the metafields, fallback to just en
+  endcomment
+  if namespace.title[metafield_lang] == blank and metafield_lang contains '-'
+    assign metafield_lang = request.locale.iso_code | split: '-' | last | downcase
+  endif
+
+
+  if shop.permanent_domain contains '-row'
+    assign key_features = namespace.key_features.value[metafield_lang]
+
+    if metafield_lang == 'en' and key_features == blank
+      assign key_features = namespace.key_features.value.gb
+    endif
+
+  else
+    assign key_features = locale_metafields.key_features.value
+  endif
+-%}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "key-features", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="key-features"
+>
+  <div class="key-features critical-component-clear liquid">
+    {% for key_feature in key_features %}
+      {%- liquid
+        assign heading_text = key_feature.heading
+        assign desc = key_feature.description
+        assign id = forloop.index
+        assign modulo = forloop.index | modulo: 2
+        assign image_alignment = 'left'
+
+        comment
+          alternate the alignment for odd and even numbers
+        endcomment
+        if modulo == 0
+          assign image_alignment = 'right'
+        endif
+
+        comment
+          On PDP get images automatically based on naming convention and index
+            - naming convention is kf-{{index}}-{{handle}}.jpg
+              e.g. kf-1-cloud-II-headset.jpg
+        endcomment
+        if template == 'product'
+          assign image_name =  'kf-' | append: forloop.index | append: '-' | append: product.handle | append: '.jpg'
+          assign background_image_url = images[image_name]
+
+          capture background_image
+            render 'responsive-bg-image', image: background_image_url
+          endcapture
+        endif
+      %}
+
+      {% render 'image-banner-block',
+        image_alignment: image_alignment,
+        background_image: background_image,
+        subtitle_text: subtitle_text,
+        heading_text: heading_text,
+        desc: desc,
+      %}
+    {% endfor %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Key Features",
+  "settings": []
+}
+{% endschema %}

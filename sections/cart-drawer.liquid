@@ -1,0 +1,199 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Section: Cart drawer
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign checkout_string = 'cart.checkout' | t
+  assign continue_shopping_string = 'cart.continue_shopping' | t
+  assign items_string = 'cart.items.plural' | t
+  assign view_cart_string = 'cart.view_cart' | t
+
+  if cart.item_count == 1
+    assign items_string = 'cart.items.single' | t
+  endif
+-%}
+
+{% assign partner_feature = false %}
+{% if settings.enable_partner_feature %}
+  {% capture partner_feature %}
+    {
+      image: {
+        src: {{ settings.partner_feature_image | image_url | json | escape }},
+        alt: {{ settings.partner_feature_image.alt | json | escape }},
+        height: {{ settings.partner_feature_image.height }},
+        width: {{ settings.partner_feature_image.width }},
+        aspect_ratio: {{ settings.partner_feature_image.aspect_ratio }}
+      },
+      caption: {{ settings.partner_feature_caption | json | escape }}
+    }
+  {% endcapture %}
+{% endif %}
+
+<section
+  data-component-handle="cart-drawer"
+  data-component-type="trigger"
+>
+  <overlay
+    key="cartDrawer"
+    block-class="cart-drawer-overlay"
+    direction="left"
+    namespace="cartDrawer"
+    type="drawer"
+  >
+    <template #body="{ isActive }">
+      <cart-drawer
+        v-if="getComponentVisible('cart-drawer')"
+        v-cloak
+        :is-active="isActive"
+        :payments="[
+          {%- for type in shop.enabled_payment_types -%}
+            {
+              icon: {{ type | payment_type_svg_tag | json | escape }},
+              type: {{ type | handle | json | escape }}
+            }{%- unless forloop.last -%},{%- endunless -%}
+          {%- endfor -%}
+        ]"
+        :disclaimer="{{ section.settings.disclaimer | json | escape }}"
+        :partner-feature="{{ partner_feature }}"
+      ></cart-drawer>
+
+      {% comment %}
+      ----------------------------------------------------------------------------
+        Loading state.
+      ----------------------------------------------------------------------------
+      {% endcomment %}
+      <div v-if="!getComponentActive('cart-drawer')">
+        <div class="cart-drawer is-loading critical-component-hide liquid">
+          <div class="container">
+            <div class="cart-drawer__title h4">
+              {{ 'cart.title' | t }}
+            </div>
+            {% if cart.item_count > 0 %}
+              <form
+                class="cart-drawer__body"
+                action="{{ routes.cart_url }}"
+                method="post"
+              >
+                <div class="cart-drawer__products">
+                  {% for item in cart.items %}
+                    {% render 'line-item' with
+                      block_class: 'cart-drawer',
+                      index: forloop.index0,
+                      item: item,
+                      loading_animation: true,
+                    %}
+                  {% endfor %}
+                </div>
+
+                <div class="cart-drawer__footer">
+                  <p
+                    class="cart-drawer__subtitle"
+                  >
+                    <span
+                      class="cart-drawer__items h6"
+                    >
+                      {{ 'cart.general.subtotal' | t | append: ':' }}
+                    </span>
+
+                    <span
+                      class="cart-drawer__price h5"
+                    >
+                      {{ cart.total_price | money }}
+                    </span>
+                  </p>
+                  <div class="cart-drawer__actions">
+                    {% render 'btn' with
+                      class: 'cart-drawer__view-cart'
+                      modifiers: 'secondary'
+                      label: view_cart_string
+                      url: routes.cart_url,
+                    %}
+
+                    {% render 'btn' with
+                      class: 'cart-drawer__checkout',
+                      modifiers: 'primary',
+                      name: 'checkout',
+                      label: checkout_string,
+                      type: 'submit',
+                    %}
+                  </div>
+                  {% render 'payment-icons' %}
+
+                  <div class="cart-drawer__disclaimer body-2">
+                    {% if section.settings.disclaimer %}
+                      <span
+                        class="cart-drawer__disclaimer-text body-2"
+                      >
+                        {{ section.settings.disclaimer }}
+                      </span>
+                    {% else %}
+                      <span
+                        class="cart-drawer__disclaimer-text body-2"
+                      >
+                        {{ 'cart.general.shipping_at_checkout' | t }}
+                      </span>
+                      <span
+                        class="cart-drawer__disclaimer-text body-2"
+                      >
+                        {{ 'cart.general.currency_disclaimer' | t : currency: shop.currency }}
+                      </span>
+                    {% endif %}
+                  </div>
+
+                  {% if settings.enable_partner_feature %}
+                    <div class=cart-drawer__partner-feature">
+                      {% if settings.partner_feature_image %}
+                        {% render 'responsive-image' with
+                          wrapper_class: 'cart-drawer__partner-feature-image'
+                          image: settings.partner_feature_image,
+                          max_width: 120,
+                        %}
+                      {% endif %}
+
+                      {% if settings.partner_feature_caption %}
+                        <p class="cart-drawer__partner-feature-caption body-2">{{ settings.partner_feature_caption }}</p>
+                      {% endif %}
+                    </div>
+                  {% endif %}
+
+                </div>
+              </form>
+
+            {% else %}
+              <div class="cart-drawer__empty">
+                <p class="cart-drawer__empty-title text-heading-l">
+                  {{ 'cart.empty.title' | t }}
+                </p>
+
+                <p class="cart-drawer__empty-text text-body-m">
+                  {{ 'cart.empty.text' | t }}
+                </p>
+
+                {% render 'btn' with
+                  class: 'cart-drawer__continue'
+                  label: continue_shopping_string,
+                  type: 'button'
+                  url: routes.root,
+                %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </template>
+  </overlay>
+</section>
+
+{% schema %}
+{
+  "name": "Cart Drawer",
+  "settings": [
+    {
+      "type": "richtext",
+      "id": "disclaimer",
+      "label": "Disclaimer"
+    }
+  ]
+}
+{% endschema %}

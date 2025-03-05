@@ -1,0 +1,147 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet: Product form (product-form)
+
+  @param {String} [class] - Additional classes.
+  @param {String} [section_id] - Section Id.
+  @param {Object} product - Liquid object.
+------------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign add_to_cart_string = 'product.cta.add_to_cart' | t
+
+  assign metafield_lang = request.locale.iso_code | downcase
+  assign metafield_namespace = metafield_lang | append: '_product'
+
+  assign product_variant = product.selected_or_first_available_variant
+  assign short_desc = product_variant.metafields[metafield_namespace].short_desc | escape | default: false
+  assign title = product.title
+
+  assign inventory_threshold = settings.low_inventory_threshold
+
+  if translate_title
+    assign title = translate_title
+  endif
+
+  if translate_shortDesc
+    assign short_desc = translate_shortDesc
+  endif
+
+  if product.type == 'Gift Cards'
+    assign is_gift_card = true
+  endif
+-%}
+
+<div
+  class="
+    product-form
+    {{ class }}
+    is-loading
+    liquid
+  "
+>
+  {% form 'product', product, class: 'product-form__form' %}
+    <div class="product-form__header mobile-hide">
+      <h1
+        id="`section-title-{{ section_id }}`"
+        class="product-form__title h4"
+      >
+        {{ title }}
+      </h1>
+
+      <div class="product-form__price-wrapper">
+        {% render 'product-prices' with
+          available: product.available,
+          block_class: 'main-product',
+          class: 'product-price__container',
+          compare_at_price: product.compare_at_price,
+          price: product.price,
+        %}
+      </div>
+
+      <!-- YOTPO PRODUCT PAGE STAR RATING | location: snippets > product-form.liquid -->
+      {% render 'yotpo-reviews', yotpo_widget: 'pdp_star_rating', product: product, item: item %}
+      <!-- END | YOTPO STAR RATING (CATEGORY PAGE) -->
+
+      {% if short_desc != blank %}
+        {% assign short_desc = short_desc | remove: '[' | remove: ']' | split: ',' %}
+          <div class="product-form__short-desc">
+            <ul>
+              {% for bullet in short_desc %}
+                <li>{{ bullet }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+      {% endif %}
+    </div>
+    <div class="form-group">
+      <div
+        {% if product.has_only_default_variant %}
+          class="is-hidden"
+        {% endif %}
+        class="form-group__field"
+      >
+        <legend class="form-group__title subtitle-1">
+          {{ 'product.form.variants' | t: option: '' }}:
+          <span class="form-group__subtitle">
+            {{ product_variant.title }}
+          </span>
+        </legend>
+
+        {% for variant in product.variants %}
+          <input
+            id="{{ variant.id }}"
+            type="radio"
+            name="variant"
+            class="product-form__input"
+          >
+          <label
+            for="{{ variant.id }}"
+            class="
+              product-form__label
+              {% if variant == product_variant %}
+                active
+              {% endif %}
+            "
+          >
+            <span class="product-form__text subtitle-2">
+              {{ variant.title }}
+            </span>
+          </label>
+        {% endfor %}
+      </div>
+
+      <div class="form-group__footer">
+        {% render 'btn' with
+          block_class: 'main-product',
+          class: 'main-product__add-to-cart',
+          label: add_to_cart_string,
+          modifiers: 'primary large block',
+          type: 'submit',
+        %}
+      </div>
+
+      {% if
+        settings.enable_low_inventory and
+        product_variant.inventory_quantity <= inventory_threshold and
+        product_variant.inventory_quantity > 0
+      %}
+        <div class="product-form__inventory-message" >
+          <span>
+            {{ 'product.form.low_inventory_message_html' | t }}
+          </span>
+          {% render 'tooltip', message: {{ 'product.form.low_inventory_tooltip_html' | t }} %}
+        </div>
+      {% endif %}
+
+      {% if product_variant.sku %}
+        <div
+          class="product-form__sku"
+        >
+          SKU: <span> {{ product_variant.sku }} </span>
+        </div>
+      {% endif %}
+
+    </div>
+  {% endform %}
+</div>

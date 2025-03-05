@@ -1,0 +1,15 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet: redirect-modal (redirect-modal)
+------------------------------------------------------------------------------
+{% endcomment %}
+<div
+  class="redirect-modal is-loading liquid"
+>
+  <div class="modal__overlay" data-micromodal-close>
+    <div js-modal="body">
+      {% render 'redirect-modal-choices' %}
+      {% render 'redirect-modal-settings' with hidden: true %}
+    </div>
+  </div>
+</div>

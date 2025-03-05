@@ -1,0 +1,83 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Image banner (image-banner)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.image-banner.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign image_alignment = block.settings.image_alignment
+  assign text_alignment = block.settings.text_alignment
+  assign subtitle_text = block.settings.subtitle_text
+  assign heading_text = block.settings.heading_text
+  assign desc = block.settings.desc
+  assign cta_link = block.settings.cta_link
+  assign cta_text = block.settings.cta_text
+  assign cta_theme = block.settings.cta_theme
+
+  if block.settings.overlay_image
+    assign overlay_image = block.settings.overlay_image | replace: 'files/', '' | file_url
+  endif
+
+
+  capture background_image
+    render 'responsive-bg-image', image: block.settings.background_image
+  endcapture
+-%}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in block.settings %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "image-banner", "settings": {{ block.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="image-banner"
+  data-component-type="load"
+>
+  <image-banner
+    v-if="getComponentVisible('image-banner')"
+    v-cloak
+    :background-image="{{ background_image | json | escape }}"
+    :cta-link="{{ cta_link | json | escape }}"
+    :cta-text="{{ cta_text | json | escape }}"
+    :cta-theme="{{ cta_theme | json | escape }}"
+    :desc="{{ desc | json | escape }}"
+    :heading-text="{{ heading_text | json | escape }}"
+    :image-alignment="{{ image_alignment | json | escape }}"
+    :overlay-image="{
+      alt: {{ heading_text | json | escape }},
+      src: {{ overlay_image | json | escape }}
+    }"
+    :subtitle-text="{{ subtitle_text | json | escape }}"
+    :text-alignment="{{ text_alignment | json | escape }}"
+    :liquid="{
+      sectionId: {{ section.id | json | escape }}
+    }"
+  ></image-banner>
+
+  {% comment %}
+  -----------------------------------------------------------------------------
+    Loading state.
+  -----------------------------------------------------------------------------
+  {% endcomment %}
+
+  <div v-if="!getComponentActive('image-banner')">
+    {% render 'image-banner-block',
+      image_alignment: image_alignment,
+      background_image: background_image,
+      overlay_image: overlay_image,
+      text_alignment: text_alignment,
+      subtitle_text: subtitle_text,
+      heading_text: heading_text,
+      desc: desc,
+      cta_link: cta_link,
+      cta_text: cta_text,
+      cta_theme: cta_theme,
+    %}
+  </div>
+</section>

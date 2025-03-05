@@ -1,0 +1,288 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Customers order (customers-order)
+  - Tracking codes are broken out into individual fulfillments.
+  - Static section.
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.customers-order.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign back_to_orders_string = 'customers.order.back_to_orders' | t
+  assign fulfilled_line_items = ''
+  assign has_tracking_codes = false
+  assign tracking_code_links = ''
+
+  capture arrow_left_icon
+    render 'icon-direction' with icon: 'arrow', direction: 'left'
+  endcapture
+
+  for line_item in order.line_items
+    if line_item.fulfillment == blank or fulfilled_line_items contains line_item.id or line_item.fulfillment.tracking_number == blank
+      continue
+    endif
+
+    assign fulfilled_line_items = fulfilled_line_items | append: line_item.fulfillment.fulfillment_line_items
+    assign has_tracking_codes = true
+
+    capture tracking_code_links
+      echo tracking_code_links
+      echo '<a class="order__tracking-link" href="#">' | replace: '#', line_item.fulfillment.tracking_url
+        echo line_item.fulfillment.tracking_number
+      echo '</a><br>'
+    endcapture
+  endfor
+-%}
+
+<section
+  class="customers"
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="customers-order"
+>
+  <div class="customers-order critical-component-clear liquid">
+    {% render 'customers-header' with current_url: '/account?view=orders' %}
+
+    <div class="customers__content component-section container">
+
+      {% comment %}
+      -----------------------------------------------------------------------------
+        Header.
+      -----------------------------------------------------------------------------
+      {% endcomment %}
+      <div class="customers-order__header grid">
+        <div class="customers-header__back col xs4 l12">
+          {% render 'btn'
+            icon: arrow_left_icon,
+            label: back_to_orders_string,
+            modifiers: 'text reversed',
+            url: '/account?view=orders',
+          %}
+        </div>
+
+        <div class="customers-order__about col xs4 l1-6">
+          <h1
+            id="section-title-{{ section.id }}"
+            class="customers-order__title text-heading-2xl"
+          >
+            {{ 'customers.order.title' | t: name: order.name }}
+          </h1>
+
+          <p class="text-body-m">
+            {{ 'customers.order.thank_you_html' | t }}
+          </p>
+        </div>
+
+        <div class="customers-order__date order-details col xs4 l7-12">
+          <p class="order-details__label text-body-label">
+            {{ 'customers.order_labels.order_date' | t }}
+          </p>
+
+          <p class="order-details__field text-body-m">
+            {{ order.created_at | date: format: 'day_full_month_year' }}
+          </p>
+        </div>
+
+        {% if order.cancelled %}
+          {% assign cancelled_at = order.cancelled_at | date: format: 'day_full_month_year_time' %}
+
+          <div class="customers-order__cancelled xs4 l1-6">
+            <p class="subtitle-1">
+              {{ 'customers.order.cancelled.title' | t: date: cancelled_at }}
+            </p>
+
+            <p class="text-body-m">
+              {{ 'customers.order.cancelled.reason' | t: reason: order.cancel_reason_label }}
+            </p>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="customers-order__details-items grid">
+
+        {% comment %}
+        -----------------------------------------------------------------------------
+          Details.
+        -----------------------------------------------------------------------------
+        {% endcomment %}
+        <div class="customers-order__details col xs4 l1-8">
+          <h2 class="customers-order__subtitle text-heading-l">
+            {{ 'customers.order.order_details' | t }}
+          </h2>
+
+          <div class="customers-order__order order">
+
+            {% comment %}
+            -----------------------------------------------------------------------------
+              Delivery.
+            -----------------------------------------------------------------------------
+            {% endcomment %}
+            <div class="order__delivery order__section">
+              <h3 class="order__title text-body-m text-heading-l-desktop">
+                {{ 'customers.order.delivery.title' | t }}
+              </h3>
+
+              <div class="order__grid">
+                <div class="order-details">
+                  <p class="order-details__label text-body-label">
+                    {{ 'customers.order_labels.delivery_status' | t }}
+                  </p>
+
+                  <p class="order-details__field text-body-m">
+                    {{ order.fulfillment_status_label }}
+                  </p>
+                </div>
+
+                <div class="order-details">
+                  <p class="order-details__label text-body-label">
+                    {{ 'customers.order.delivery.address' | t }}
+                  </p>
+
+                  {% render 'customers-address' with address: order.shipping_address %}
+                </div>
+
+                {% if has_tracking_codes %}
+                  <div class="order-details">
+                    <p class="order-details__label text-body-label">
+                      {{ 'customers.order.delivery.track_order' | t }}
+                    </p>
+
+                    <p class="order-details__field text-body-m">
+                      {{ tracking_code_links }}
+                    </p>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            {% comment %}
+            -----------------------------------------------------------------------------
+              Billing.
+            -----------------------------------------------------------------------------
+            {% endcomment %}
+            <div class="order__billing order__section">
+              <h3 class="order__title text-body-m text-heading-l-desktop">
+                {{ 'customers.order.billing.title' | t }}
+              </h3>
+
+              <div class="order__billing-details order__grid">
+                <div class="order-details">
+                  <p class="order-details__label text-body-label">
+                    {{ 'customers.order_labels.payment_status' | t }}
+                  </p>
+
+                  <p class="order-details__field text-body-m">
+                    {{ order.financial_status_label }}
+                  </p>
+                </div>
+
+                <div class="order-details">
+                  <p class="order-details__label text-body-label">
+                    {{ 'customers.order.billing.address' | t }}
+                  </p>
+
+                  {% render 'customers-address' with address: order.billing_address %}
+                </div>
+              </div>
+
+              {% comment %}
+              -----------------------------------------------------------------------------
+                Lines.
+              -----------------------------------------------------------------------------
+              {% endcomment %}
+              <div class="order__lines">
+                <p class="order__line text-body-m">
+                  {{ 'customers.order.lines.subtotal' | t }}
+
+                  <span data-label="{{ 'customers.order.lines.subtotal' | t }}">
+                    {{ order.subtotal_price | money }}
+                  </span>
+                </p>
+
+                {% for discount in order.discounts %}
+                  <p class="order__line text-body-m">
+                    {{ 'customers.order.lines.discount' | t: discount_code: discount.code }}
+
+                    <span data-label="{{ 'customers.order.lines.discount' | t }}">
+                      {{ discount.savings | money }}
+                    </span>
+                  </p>
+                {% endfor %}
+
+                {% for shipping_method in order.shipping_methods %}
+                  <p class="order__line text-body-m">
+                    {{ 'customers.order.lines.delivery' | t: shipping_method: shipping_method.title }}
+
+                    <span data-label="{{ 'customers.order.lines.delivery' | t: shipping_method: shipping_method.title }}">
+                      {{ shipping_method.price | money }}
+                    </span>
+                  </p>
+                {% endfor %}
+
+                {% for tax_line in order.tax_lines %}
+                  {%- capture tax_rate -%}
+                    {{ tax_line.title }} {{ tax_line.rate | times: 100 }}%
+                  {%- endcapture -%}
+
+                  <p class="order__line text-body-m">
+                    {{ 'customers.order.lines.tax' | t: tax_rate: tax_rate }}
+
+                    <span data-label="{{ 'customers.order.lines.tax' | t: tax_rate: tax_rate }}">
+                      {{ tax_line.price | money }}
+                    </span>
+                  </p>
+                {% endfor %}
+
+                <p class="order__line order__line--total subtitle-1">
+                  {{ 'customers.order.lines.total' | t }}
+
+                  <span data-label="{{ 'customers.order.lines.total' | t }}">
+                    {{ order.total_price | money }}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {% comment %}
+        -----------------------------------------------------------------------------
+          Items.
+        -----------------------------------------------------------------------------
+        {% endcomment %}
+        <div class="customers-order__items col xs4 l9-12">
+          <h2 class="customers-order__subtitle text-heading-l">
+            {{ 'customers.order.order_items' | t }}
+          </h2>
+
+          {% for line_item in order.line_items %}
+            {% render 'line-item' with
+              block_class: 'customers-order',
+              index: forloop.index0,
+              item: line_item,
+            %}
+          {% endfor %}
+        </div>
+      </div>
+
+      {% comment %}
+      -----------------------------------------------------------------------------
+        Mobile back button.
+      -----------------------------------------------------------------------------
+      {% endcomment %}
+      {% render 'btn'
+        class: 'customers-order__mobile-back',
+        icon: arrow_left_icon,
+        label: back_to_orders_string,
+        modifiers: 'text reversed',
+        url: '/account?view=orders',
+      %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Order",
+  "settings": []
+}
+{% endschema %}

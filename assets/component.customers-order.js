@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[6936],{5723:function(e,u,n){n.r(u),n.d(u,{default:function(){return r}});var r={name:"CustomersOrder"}}}]);
+//# sourceMappingURL=component.customers-order.js.map?v=1733162424563

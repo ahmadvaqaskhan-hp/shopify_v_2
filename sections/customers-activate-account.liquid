@@ -1,0 +1,146 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Customers activate account (customers-activate-account)
+  - Static section.
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.customers-activate-account.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign activate_account_cta_string = 'customers.activate_account.cta' | t
+  assign decline_cta_string = 'customers.activate_account.decline_cta' | t
+-%}
+
+<section
+  class="customers component-section"
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="customers-activate-account"
+>
+  <div
+    class="
+      customers-activate-account
+      container
+      grid
+      critical-component-clear
+      liquid
+    "
+  >
+    <div class="col xs4 m2-3 l4-9">
+      <h1
+        id="section-title-{{ section.id }}"
+        class="customers__title text-heading-2xl"
+      >
+        {{ 'customers.activate_account.title' | t }}
+      </h1>
+
+      <p class="customers__text text-body-m rte">
+        {{ 'customers.activate_account.text' | t }}
+      </p>
+
+      {% form 'activate_customer_password' %}
+        {%- liquid
+          assign form_errors = ''
+
+          for error in form.errors
+            capture form_errors
+              echo form_errors
+              echo '<p class="customers__error body-2">'
+                render 'icon-misc' with icon: 'error'
+                echo '<span>'
+                  unless error == 'form'
+                    echo form.errors.translated_fields[error] | capitalize | append: ' '
+                  endunless
+                    echo form.errors.messages[error] | append: ' '
+                echo '</span>'
+              echo '</p>'
+            endcapture
+          endfor
+        -%}
+
+        {% if form_errors != '' %}
+          <div
+            id="activate-account-errors"
+            class="customers__error-container"
+          >
+            {{ form_errors }}
+          </div>
+        {% endif %}
+
+        <div class="form-group">
+          <div class="form-group__field">
+            <label
+              class="form-group__label text-body-label"
+              for="password"
+            >
+              {{ 'customers.fields.password.label' | t }}
+            </label>
+
+            <input
+              id="password"
+              {% if form.errors contains 'password' %}
+                class="input-error"
+              {% endif %}
+              autocomplete="new-password"
+              name="customer[password]"
+              placeholder="{{ 'customers.fields.password.placeholder' | t }}"
+              required
+              type="password"
+              {% if form.errors contains 'password' %}
+                aria-describedby="activate-account-errors"
+                aria-invalid="true"
+              {% endif %}
+            >
+          </div>
+
+          <div class="form-group__field">
+            <label
+              for="password-confirmation"
+              class="form-group__label text-body-label"
+            >
+              {{ 'customers.fields.password_confirmation.label' | t }}
+            </label>
+
+            <input
+              id="password-confirmation"
+              {% if form.errors contains 'password_confirmation' %}
+                class="input-error"
+              {% endif %}
+              autocomplete="new-password"
+              name="customer[password_confirmation]"
+              placeholder="{{ 'customers.fields.password_confirmation.placeholder' | t }}"
+              required
+              type="password"
+              {% if form.errors contains 'password_confirmation' %}
+                aria-describedby="activate-account-errors"
+                aria-invalid="true"
+              {% endif %}
+            >
+          </div>
+
+          <div class="form-group__footer">
+            {% render 'btn' with
+              block_class: 'customers'
+              label: activate_account_cta_string,
+              type: submit,
+            %}
+
+            {% render 'btn'
+              attributes: 'name="decline"'
+              block_class: 'customers',
+              label: decline_cta_string,
+              modifiers: 'text',
+              show_icon: false,
+              type: submit
+            %}
+          </div>
+        </div>
+      {% endform %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Activate Account",
+  "settings": []
+}
+{% endschema %}

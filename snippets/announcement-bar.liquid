@@ -1,0 +1,21 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet: Announcement bar (announcement-bar)
+------------------------------------------------------------------------------
+{% endcomment %}
+<div class="
+  site-header__announcement
+  announcement-bar
+  announcement-bar--primary
+  announcement-bar--{{ barLayout }}
+  is-active
+  is-loading
+  liquid
+  {% unless text %} mobile-hide{% endunless %}
+">
+  <div class="announcement-bar__inner container">
+    <div class="announcement-bar__text">
+      <span class="subtitle-2">{{ text }}</span>
+    </div>
+  </div>
+</div>

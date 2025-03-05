@@ -1,0 +1,83 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: USPS (usps)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.usps.css' | asset_url | stylesheet_tag }}
+
+<section
+  id="usps-{{ section.id }}"
+  class="usps"
+>
+  <div class="usps__wrapper">
+    {% for block in section.blocks %}
+      {% assign block_subtitle = block.settings.subtitle %}
+      {% assign icon = block.settings.icon %}
+      {% assign icon_alt_text = block.settings.icon_alt_text %}
+
+      {% capture image_attributes %}
+        alt="{{ icon_alt_text }}"
+      {% endcapture %}
+
+      <div class="usps__item">
+        <div class="usps__item-wrapper">
+          <div class="usps__image-wrapper">
+            {% render 'responsive-card-image' with
+              image: icon,
+              image_attributes: image_attributes,
+              max_width: 50,
+              max_height: 50,
+            %}
+          </div>
+          <div class="usps__item-subtitle">
+            {{ block_subtitle }}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "USPS",
+  "settings": [],
+  "max_blocks": 4,
+  "blocks": [
+    {
+      "type": "block",
+      "name": "Block",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "subtitle",
+          "label": "Description"
+        },
+        {
+          "type": "header",
+          "content": "Icon settings",
+          "info": "Image to be displayed."
+        },
+        {
+          "type": "image_picker",
+          "id": "icon",
+          "label": "Icon",
+          "info": "Recommended dimensions (50px x 50px)."
+        },
+        {
+          "type": "text",
+          "id": "icon_alt_text",
+          "label": "Alt text",
+          "default": "Alt description for SEO.",
+          "info": "Required for SEO."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "USPS"
+    }
+  ]
+}
+{% endschema %}

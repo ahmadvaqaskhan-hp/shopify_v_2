@@ -1,0 +1,115 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet / Site: Hreflang
+  - Serve alternate languages URLs on search engines.
+  - https://moz.com/learn/seo/hreflang-tag
+  - Supports metafields on products, collections, and pages to change handle
+    on different language domains.
+    - Namespace: `global`
+    - Key: `hreflang_handles`
+    - Value: Comma and space-separated list in the format URL:handle where URL
+      is the origin of the store (e.g. hostname.com), and handle is the handle
+      of the current resource on that store (not the store you're setting the
+      metafield on).
+------------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  if settings.hreflangs == blank or settings.hreflangs == ''
+    continue
+  endif
+
+  assign hreflangs = settings.hreflangs | newline_to_br
+  assign hreflangs = hreflangs | split: '<br />'
+
+  case request.page_type
+    when 'product'
+      assign metafields = product.metafields.global
+    when 'collection'
+      assign metafields = collection.metafields.global
+    when 'page'
+      assign metafields = page.metafields.global
+    when 'blog'
+      assign metafields = blog.metafields.global
+    when 'article'
+      assign metafields = article.metafields.global
+  endcase
+
+  if metafields.hreflang_handles
+    assign metafield_hreflang_handles = metafields.hreflang_handles | split: ','
+  endif
+-%}
+
+{% comment %}
+-----------------------------------------------------------------------------
+  Set the current canonical url to use in the hreflang forloop.
+  - Checks if the root_url is localized.
+  - If so, removes the localized subdirectory from the canonical url, unless
+    the current page is the homepage, in which case replace the localized
+    subdirectory with '/'.
+  - Replace logic manually joins the host and the path to ensure the
+    localization replacing does not happen on the host.
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign non_localized_canoncial_url = canonical_url
+  assign locale_path = request.locale.iso_code | downcase | prepend: '/'
+
+  if routes.root_url != '/'
+    assign string_to_remove = request.host | append: request.path
+    assign updated_path = request.path | replace_first: routes.root_url, ''
+
+    if routes.root_url == request.path
+      assign updated_path = request.path | replace_first: routes.root_url, '/'
+    endif
+
+    assign string_to_add = request.host | append: updated_path
+    assign non_localized_canoncial_url = canonical_url | replace_first: string_to_remove, string_to_add
+  endif
+
+  if request.page_type == 'product'
+    assign non_localized_request_path = request.path | remove: locale_path | split: '/' | last
+    assign non_localized_canoncial_url = request.origin | append: '/products/'| append: non_localized_request_path
+  endif
+-%}
+
+{% comment %}
+-----------------------------------------------------------------------------
+  Go through each hreflang in setting:
+  - Check to see if metafield exists.
+  - If it does, and has a domain which matches current then replace handle.
+  - Then update domain with the hreflang domain.
+-----------------------------------------------------------------------------
+{% endcomment %}
+{% for hreflang in hreflangs %}
+  {%- liquid
+    assign domain = hreflang | split: ':' | first | strip
+    assign locale = hreflang | split: ':' | last | strip
+    assign locale_path = locale | downcase | prepend: '/'
+    assign url = non_localized_canoncial_url
+    assign remove_tag = false
+
+    for metafield_hreflang_handle in metafield_hreflang_handles
+      assign handle_domain = metafield_hreflang_handle | split: ':' | first | strip
+      assign new_handle = metafield_hreflang_handle | split: ':' | last | strip
+
+      if domain == handle_domain
+        if new_handle == 'remove'
+          assign remove_tag = true
+        else
+          assign url = url | replace: handle, new_handle
+        endif
+      endif
+    endfor
+
+    assign url = url | replace: shop.domain, domain
+  -%}
+
+  {% unless remove_tag == true  %}
+  <link
+    href="{{ url }}"
+    hreflang="{{ locale }}"
+    rel="alternate"
+  >
+  {% endunless %}
+
+{% endfor %}

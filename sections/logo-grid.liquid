@@ -1,0 +1,159 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Logo grid (logo-grid)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.logo-grid.css' | asset_url | stylesheet_tag }}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "logo-grid", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+{% capture teamsArr %}
+  [
+  {% assign menu = section.settings.menu %}
+  {% for link in linklists[menu].links %}
+    {% assign value = link.title %}
+    {% assign team_name = value | split: '[' | first | strip %}
+    {% assign team_logo = value
+      | split: ' ['
+      | last
+      | split: ']'
+      | first
+      | split: ':'
+      | last
+    %}
+    {
+      title: {{ team_name | json }},
+      link: {{ link.url | json }},
+      {% assign file_url = team_logo | file_url %}
+      fileUrl: {{ file_url | json }},
+    },
+  {% endfor %}
+  ]
+{% endcapture %}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  class="logo-grid carousel swiper-container"
+  data-component-handle="logo-grid"
+  data-component-type="scroll"
+  data-section-schema="{% if request.design_mode %}{'blocks': [{% for block in section.blocks %}{ 'type': {{ block.type | json | escape }}, 'settings': {{ block.settings | json | escape }} }{% unless forloop.last %},{% endunless %}{% endfor %}],'section': { 'id': {{ section.id | json | escape }}, 'type': 'logo-grid', 'settings': {{ section.settings | json | escape }} }}{% endif %}"
+>
+  <logo-grid
+    v-if="getComponentVisible('logo-grid')"
+    v-cloak
+    :logos="{{ teamsArr | escape }}"
+    :section="{
+      settings: {
+        autoplaySpeed: {{ section.settings.autoplay }},
+        heading_text: {{ section.settings.heading_text | json | escape }},
+        subtext: {{ section.settings.subtext | json | escape }},
+      }
+    }"
+  ></logo-grid>
+
+  {% comment %}
+  -----------------------------------------------------------------------------
+    Loading state.
+  -----------------------------------------------------------------------------
+  {% endcomment %}
+  <div v-if="!getComponentActive('logo-grid')">
+    <div class="logo-grid__header">
+      {% if section.settings.heading_text %}
+        <div class="h3 logo-grid__title">{{ section.settings.heading_text }}</div>
+      {% endif %}
+
+      {% if section.settings.subtext %}
+        <div class="h6 logo-grid__subtext">{{ section.settings.subtext }}</div>
+      {% endif %}
+    </div>
+
+    <div class="swiper-wrapper logo-grid__logos">
+      {% for link in linklists[menu].links %}
+        {% assign value = link.title %}
+        {% assign team_name = value | split: '[' | first | strip %}
+        {% assign team_logo = value
+          | split: ' ['
+          | last
+          | split: ']'
+          | first
+          | split: ':'
+          | last
+        %}
+
+        <a
+          class="logo-grid__item lazyload swiper-slide responsive-image__wrapper logo-grid__margin-right"
+          {% if link.url != blank and link.url != '#' %}
+            href="{{ link.url }}"
+            target="_blank"
+          {% endif %}
+        >
+          <img
+            class="logo-grid__logo lazyload blur-up"
+            src="{{ team_logo  | file_url }}"
+            alt="{{ team_name }}"
+            data-sizes="auto"
+            data-src="{{ team_logo  | file_url }}"
+            data-widths="[180, 360, 540, 720, 900, 1080, 1296, 1512, 1728, 1944, 2160, 2376, 2592, 2808, 3024]"
+          >
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Logo Grid",
+  "class": "index-section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "autoplay",
+      "label": "Auto-rotate slide speed",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "default": 3,
+      "info": "In seconds. 0 to disable."
+    },
+    {
+      "type": "header",
+      "content": "Heading content"
+    },
+    {
+      "type": "text",
+      "id": "heading_text",
+      "label": "Heading text",
+      "default": "Hyper-X Teams"
+    },
+    {
+      "type": "text",
+      "id": "subtext",
+      "label": "Subtext",
+      "default": "HyperX supports some of the best gaming teams in the world."
+    },
+    {
+      "type": "header",
+      "content": "Logo Menu"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Select menu"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Logo Grid",
+      "category": "Custom Content Block"
+    }
+  ]
+}
+{% endschema %}

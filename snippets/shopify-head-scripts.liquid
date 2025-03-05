@@ -1,0 +1,30 @@
+{% comment %}
+  Seperate Shopify Trekkie from content_for_header so analytics scripts can
+  be triggered on request instead of page load
+
+  - Shopify Trekkie handles all analytics related scripts
+{% endcomment %}
+{% if header_scripts contains '<script class="analytics">' %}
+  {% assign analytics_start = header_scripts | split: '<script class="analytics">' %}
+  {% assign trekkie_js = analytics_start[1] | split: '</script>' | first %}
+
+  {% assign pre_analytics_scripts = analytics_start | first | remove: '<script class="analytics">' %}
+  {% assign post_analytics_scripts = header_scripts | split: '<script class="analytics">' | last | replace_first: '</script>', '</script>FIRST_SCRIPT_CLOSE' | split: 'FIRST_SCRIPT_CLOSE' | last %}
+
+  {{ pre_analytics_scripts }}
+
+  <script class="analytics">
+    {% render 'gtm' with 'raw' %}
+    {{ trekkie_js }}
+  </script>
+
+  {{ post_analytics_scripts }}
+
+{% else %}
+  {% comment %}
+    Render normally if content_for_header isn't as expected
+  {% endcomment %}
+  <script>
+    {% render 'gtm' with 'raw' %}
+  </script>
+{% endif %}

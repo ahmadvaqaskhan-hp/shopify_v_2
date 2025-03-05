@@ -1,0 +1,161 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Video block (video-block)
+  - Static section.
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.video-block.css' | asset_url | stylesheet_tag }}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "video-block", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="video-block"
+  data-section-schema="{% if request.design_mode %}{'blocks': [{% for block in section.blocks %}{ 'type': {{ block.type | json | escape }}, 'settings': {{ block.settings | json | escape }} }{% unless forloop.last %},{% endunless %}{% endfor %}],'section': { 'id': {{ section.id | json | escape }}, 'type': 'video-block', 'settings': {{ section.settings | json | escape }} }}{% endif %}"
+>
+  <div class="video-block critical-component-clear liquid">
+    <div class="video-block__paragraph">
+      {% if section.settings.heading_text != blank %}
+        <div class="h3 video-block__heading">{{ section.settings.heading_text }}</div>
+      {% endif %}
+
+      {% if section.settings.description != blank %}
+        <div class="h6 video-block__description">{{ section.settings.description }}</div>
+      {% endif %}
+    </div>
+
+    <div class="video-block__video {% if section.blocks.size == 1 %}video-block__video--single{% endif %}">
+      {% for block in section.blocks %}
+        {% if block.settings.video_url != blank %}
+          <div class="
+            video-block__player
+            {% if section.blocks.size == 1 and forloop.index == 1 %}
+              video-block__player--first
+            {% endif %}
+            {% if section.blocks.size == 3 and forloop.index == 3 %}
+              video-block__player--third
+            {% endif %}
+          ">
+            {% capture video_url %}
+              {% if block.settings.video_url contains 'youtube.com' %}
+                {{- block.settings.video_url | split: 'watch?v=' | last | prepend: 'https://www.youtube.com/embed/' | strip -}}
+              {% else %}
+                {{- block.settings.video_url -}}
+              {% endif %}
+            {% endcapture %}
+
+            {% capture video_id %}
+              {{- section.id | preprend: 'vimeo-' -}}
+            {% endcapture %}
+
+            {% if block.settings.video_url.type == 'vimeo' %}
+              <div
+                id="{{ video_id }}"
+                class="video-block__vimeo"
+                data-video-id="{{ video_url }}"
+                data-video-title="{{ block.settings.video_url.type }} {{ forloop.index }}"
+                js-video="vimeo"
+              >
+              </div>
+            {% else %}
+              <iframe
+                frameBorder="0"
+                src="{{- video_url -}}"
+                width="100%"
+                height="100%"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                title="{{ block.settings.video_url.type }} {{ forloop.index }}"
+                webkitAllowFullScreen
+                mozallowfullscreen
+                allowFullScreen
+                js-video="{{ block.settings.video_url.type }}"
+              ></iframe>
+            {% endif %}
+
+            {% if block.settings.video_desc != blank %}
+              <div class="video-block__video-desc body-1">
+                {{ block.settings.video_desc }}
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Video Section",
+  "class": "index-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading_text",
+      "label": "Heading text",
+      "default": "Video Section Title"
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "label": "Description text",
+      "default": "Description"
+    }
+  ],
+  "max_blocks": 4,
+  "blocks": [
+    {
+      "type": "video",
+      "name": "Video",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Video"
+        },
+        {
+          "type": "video_url",
+          "id": "video_url",
+          "accept": [
+            "youtube",
+            "vimeo"
+          ],
+          "label": "Video URL",
+          "default": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+          "info": "Supports Youtube and Vimeo"
+        },
+        {
+          "type": "header",
+          "content": "Content"
+        },
+        {
+          "type": "text",
+          "id": "video_desc",
+          "label": "Video description",
+          "default": "Video description"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Video Section",
+      "category": "Custom Content Block",
+      "blocks": [
+        {
+          "type": "video"
+        },
+        {
+          "type": "video"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

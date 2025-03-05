@@ -1,0 +1,52 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Snippet: Address actions
+  - Action buttons displayed beneath each address.
+
+  @param {Boolean} default_address - Actions shown for default address.
+  @param {String} form_id - Form ID.
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign delete_address_string = 'customers.addresses.delete.action' | t
+  assign delete_attributes = 'data-form-id="#" js-addresses="delete"' | replace: '#', form_id
+  assign edit_address_string = 'customers.addresses.edit' | t
+  assign edit_attributes = 'data-form-id="#" js-addresses="edit"' | replace: '#', form_id
+-%}
+
+<div class="customers-addresses__actions">
+  {% render 'btn' with
+    attributes: edit_attributes,
+    class: 'customers-addresses__action',
+    label: edit_address_string,
+    modifiers: 'text',
+    show_icon: false,
+  %}
+
+  {% render 'btn' with
+    attributes: delete_attributes,
+    class: 'customers-addresses__action',
+    label: delete_address_string,
+    modifiers: 'text',
+    show_icon: false,
+  %}
+
+  {% unless default_address %}
+    <div class="customers-addresses__quick-default checkbox">
+      <input
+        id="quick-default-{{ form_id }}"
+        class="checkbox__input"
+        type="checkbox"
+        data-form-id="{{ form_id }}"
+        js-addresses="quickDefault"
+      >
+
+      <label
+        class="checkbox__label"
+        for="quick-default-{{ form_id }}"
+      >
+        {{ 'customers.addresses.set_as_default' | t }}
+      </label>
+    </div>
+  {% endunless %}
+</div>

@@ -1,0 +1,89 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Snippet: Product card
+
+  @param {String} [block_class] - Block level class to apply to all elements.
+  @param {Boolean} [loading_animation] - Force the display of the loading state.
+  @param {String} [class] - Additional classes.
+  @param {Number} [index] - Index for product card.
+  @param {Boolean|Object} product - Liquid object, false shows loading state.
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign animation_delay = index | times: 0.15
+
+  if loading_animation or product == false or product.handle == blank
+    assign product_class = product_class | append: 'is-loading '
+  endif
+-%}
+
+{%- capture modifiers -%}
+  {%- if settings.enable_alt_product_image_hover -%}
+    product-card--alt
+  {%- endif -%}
+{%- endcapture -%}
+
+{% if empty_template %}
+  {% assign product = '' %}
+{% endif %}
+
+{% assign product_image = product.featured_image %}
+
+{% if bundle_card and product.variants[0].image != blank %}
+  {% assign product_image = product.variants[0].image %}
+{% endif %}
+
+<a
+  class="product-card {{ modifiers }} liquid"
+  data-cy="productCard"
+  href="{{ product.url | within: collection }}"
+  aria-label="{{ product.title }}"
+  js-product-card="container"
+  js-product-link
+  {% if bundle_card %}
+    target="_blank"
+  {% endif %}
+>
+  <div
+    class="product-card__thumbnail-container"
+    js-product-card="thumbnailContainer"
+  >
+    {% if product.featured_image != blank or empty_template %}
+      {% render 'responsive-image' with
+        animation_delay: animation_delay,
+        class: product_image_class,
+        block_class: 'product-card',
+        ratio: '3:4',
+      %}
+    {% elsif settings.use_loading_image %}
+      <img src="{{ 'image_placeholder.svg' | file_url }}" tabindex="-1"/>
+    {% endif %}
+  </div>
+
+  <div class="product-card__footer">
+    <span
+      class="product-card__title subtitle-1"
+      js-product-link="product-title"
+    >
+      {{ product.title }}
+    </span>
+
+    <!-- YOTPO STAR RATING (CATEGORY PAGE) | location: snippets > product-card.liquid -->
+    {% render 'yotpo-reviews', yotpo_widget: 'category_star_rating', product: product, item: item %}
+    <!-- END | YOTPO STAR RATING (CATEGORY PAGE) -->
+
+    {% unless settings.store_transactional_type == 'non-transactional' or bundle_card == false %}
+      {% render 'product-prices' with
+        product: product,
+        bundle_card: bundle_card,
+        discount_amount: discount_amount %}
+    {% endunless %}
+  </div>
+
+  <div class="product-card__extras">
+    {% render 'product-card-swatches',
+      product: product,
+      bundle_card: bundle_card
+    %}
+  </div>
+</a>

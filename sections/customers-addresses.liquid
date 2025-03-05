@@ -1,0 +1,240 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Customers addresses (customers-addresses)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.customers-addresses.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign add_new_address_string = 'customers.addresses.add' | t
+  assign back_to_addresses_string = 'customers.addresses.back_to_addresses' | t
+  assign delete_yes_string = 'customers.addresses.delete.yes' | t
+  assign delete_no_string = 'customers.addresses.delete.no' | t
+  assign edit_address_string = 'customers.addresses.edit' | t
+
+  capture arrow_left_icon
+    render 'icon-direction' with icon: 'arrow', direction: 'left'
+  endcapture
+-%}
+
+<section
+  class="customers"
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="customers-addresses"
+  data-component-type="load"
+>
+  <div class="customers-addresses critical-component-clear liquid">
+    {% render 'customers-header' %}
+
+    <div class="customers__content component-section container grid">
+
+      {% comment %}
+      -----------------------------------------------------------------------------
+        Addresses.
+        - Blocks don't match height if they both have content.
+      -----------------------------------------------------------------------------
+      {% endcomment %}
+      <div
+        class="
+          customers-addresses__addresses
+          {% if customer.addresses_count > 2 %}
+            customers-addresses__addresses--no-height-match
+          {% endif %}
+          col xs4 l12
+          grid
+        "
+        js-addresses="addressesContainer"
+      >
+        <div class="customers-addresses__header col xs4">
+          <h1
+            id="section-title-{{ section.id }}"
+            class="customers-addresses__title customers__title text-heading-2xl"
+          >
+            {{ 'customers.addresses.title' | t }}
+          </h1>
+
+          {% render 'btn' with
+            attributes: 'js-addresses="add"',
+            class: 'customers-addresses__add',
+            label: add_new_address_string,
+            modifiers: 'outlined',
+          %}
+        </div>
+
+        {% comment %}
+        -----------------------------------------------------------------------------
+          Default address.
+        -----------------------------------------------------------------------------
+        {% endcomment %}
+        <div class="customers-addresses__default panel col xs4 l6">
+          <h2 class="panel__title text-heading-l">
+            {{ 'customers.addresses.default_address' | t }}
+          </h2>
+
+          {% if customer.addresses_count == 0 %}
+            <p class="text-body-m">
+              {{ 'customers.addresses.no_default_address' | t }}
+            </p>
+
+          {% else %}
+            <div class="customers-addresses__address-actions">
+              <div class="customers-addresses__address">
+                {% render 'customers-address' with address: customer.default_address %}
+              </div>
+
+              {% render 'address-actions' with
+                default_address: true,
+                form_id: customer.default_address.id
+              %}
+            </div>
+          {% endif %}
+        </div>
+
+        {% comment %}
+        -----------------------------------------------------------------------------
+          Additional addresses.
+        -----------------------------------------------------------------------------
+        {% endcomment %}
+        <div class="customers-addresses__additional panel col xs4 l6">
+          <h2 class="panel__title text-heading-l">
+            {{ 'customers.addresses.additional_addresses' | t }}
+          </h2>
+
+          {% if customer.addresses_count == 1 %}
+            <p class="text-body-m">
+              {{ 'customers.addresses.no_additional_addresses' | t }}
+            </p>
+
+          {% else %}
+            {% for address in customer.addresses %}
+              {% if address == customer.default_address %}
+                {% continue %}
+              {% endif %}
+
+              <div class="customers-addresses__address-actions">
+                <div class="customers-addresses__address">
+                  {% render 'customers-address' with address: address %}
+                </div>
+
+                {% render 'address-actions' with form_id: address.id %}
+              </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
+      {% comment %}
+      -----------------------------------------------------------------------------
+        Add/edit forms.
+      -----------------------------------------------------------------------------
+      {% endcomment %}
+      <div
+        class="customers-addresses__forms is-hidden col xs4 l4-9"
+        js-addresses="formContainer"
+      >
+        {% render 'btn' with
+          attributes: 'js-addresses="back"',
+          class: 'customers-addresses__back',
+          icon: arrow_left_icon,
+          label: back_to_addresses_string,
+          modifiers: 'text reversed',
+          type: 'button',
+        %}
+
+        {% form 'customer_address', customer.new_address, class: 'customers-addresses__form is-hidden', data-form-id: 'new', js-addresses: 'forms', return_to: routes.account_addresses_url %}
+          <h2 class="customers-addresses__form-title text-heading-2xl">
+            {{ 'customers.addresses.add' | t }}
+          </h2>
+
+          {% render 'address-fields' with form: form, form_id: 'new' %}
+
+          <div class="form-group__footer">
+            {% render 'btn' with
+              label: add_new_address_string,
+              type: 'submit',
+            %}
+          </div>
+        {% endform %}
+
+        {% for address in customer.addresses %}
+          {% form 'customer_address', address, class: 'customers-addresses__form is-hidden', data-form-id: address.id, js-addresses: 'forms', return_to: routes.account_addresses_url %}
+            <h2 class="customers-addresses__form-title text-heading-2xl">
+              {{ 'customers.addresses.edit' | t }}
+            </h2>
+
+            {% render 'address-fields' with form: form, form_id: address.id %}
+
+            <div class="form-group__footer">
+              {% render 'btn' with
+                label: edit_address_string,
+                type: 'submit',
+              %}
+            </div>
+          {% endform %}
+        {% endfor %}
+
+        {% render 'btn' with
+          attributes: 'js-addresses="back"',
+          class: 'customers-addresses__mobile-back',
+          icon: arrow_left_icon,
+          label: back_to_addresses_string,
+          modifiers: 'text reversed',
+          type: 'button',
+        %}
+      </div>
+    </div>
+  </div>
+
+  {% comment %}
+  -----------------------------------------------------------------------------
+    Delete modal.
+  -----------------------------------------------------------------------------
+  {% endcomment %}
+  <overlay
+    key="deleteAddress"
+    block-class="customers-addresses"
+    direction="up"
+    namespace="deleteAddress"
+    type="modal"
+  >
+    <template #title>
+      {{ 'customers.addresses.delete.confirm' | t }}
+    </template>
+
+    <template #body="{ isActive }">
+      {% render 'btn' with
+        attributes: 'js-addresses="deleteConfirm"',
+        class: 'customers-addresses__delete-button',
+        label: delete_yes_string,
+        show_icon: false,
+        type: 'button',
+      %}
+
+      {% render 'btn' with
+        attributes: 'js-addresses="deleteCancel"',
+        class: 'customers-addresses__delete-button',
+        label: delete_no_string,
+        modifiers: 'outlined',
+        show_icon: false,
+        type: 'button',
+      %}
+    </template>
+  </overlay>
+</section>
+
+{% comment %}
+-----------------------------------------------------------------------------
+  Load Vue component to initialise JS code.
+-----------------------------------------------------------------------------
+{% endcomment %}
+<customers-addresses
+  v-if="getComponentVisible('customers-addresses')"
+  v-cloak
+></customers-addresses>
+
+{% schema %}
+{
+  "name": "Addresses",
+  "settings": []
+}
+{% endschema %}

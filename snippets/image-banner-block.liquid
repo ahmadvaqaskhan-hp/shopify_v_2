@@ -1,0 +1,119 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet: Image banner (image-banner)
+
+  @param {String} [image_alignment] - Image alignment.
+  @param {Object} [background_image] - Background image.
+  @param {Object} [overlay_image] - Overlay image, sits above the bg image.
+  @param {String} [text_alignment] - Text alignment.
+  @param {String} [subtitle_text] - Subtitle text above the heading.
+  @param {String} [heading_text] - Heading text.
+  @param {String} [desc] - Description text.
+  @param {String} [cta_link] - CTA link.
+  @param {String} [cta_text] - CTA text.
+  @param {String} [cta_aria_label] - CTA aria label text.
+  @param {String} [cta_theme] - CTA theme.
+------------------------------------------------------------------------------
+{% endcomment %}
+{%- capture image_banner -%}
+  <div
+    class="image-banner__primary-image-wrapper"
+    js-image-banner="image"
+  >
+    <div
+      class="image-banner__primary-image lazyload"
+      data-bgset="{{ background_image }}"
+    ></div>
+  </div>
+
+  {% if overlay_image %}
+    <div
+      class="image-banner__overlay-image-wrapper"
+      js-image-banner="overlay"
+    >
+      {% render 'responsive-image' with
+        image: overlay_image,
+        wrapper_class: 'image-banner__overlay-image',
+        max_height: 550,
+        max_width: 550
+      %}
+    </div>
+  {% endif %}
+{%- endcapture -%}
+
+{%- capture text_content -%}
+  <div class="image-banner__text {{ text_alignment }}">
+    {% unless subtitle_text == blank %}
+      <p class="image-banner__subtitle subtitle-2">
+        {% render 'text-with-icon', text: subtitle_text %}
+      </p>
+    {% endunless %}
+
+    {% unless heading_text == blank %}
+      <h2 class="image-banner__heading h3">
+        {{ heading_text }}
+      </h2>
+    {% endunless %}
+
+    {% unless desc == blank %}
+      <div class="image-banner__desc h6">
+        {{ desc }}
+      </div>
+    {% endunless %}
+
+    {% if
+      cta_link != blank and
+      cta_text != blank
+    %}
+      <a
+        class="
+          image-banner__cta
+          button
+          button--{{ cta_theme }}
+        "
+        {% if cta_aria_label != blank %}
+          aria-label="{{ cta_aria_label }}"
+        {% endif %}
+        href="{{ cta_link }}"
+      >
+        {{ cta_text }}
+        {% render 'icon-direction', icon: 'arrow', direction: 'up-right' %}
+      </a>
+    {% endif %}
+  </div>
+{%- endcapture -%}
+
+<div
+  data-component-handle="image-banner-block"
+  data-component-type="scroll"
+>
+  <div
+    class="image-banner critical-component-clear liquid {{ image_alignment }}"
+  >
+    <div class="container">
+      <div class="image-banner__container">
+        {% if
+          cta_link != blank and
+          cta_text != blank
+        %}
+          <a
+            class="image-banner__banner"
+            href="{{ cta_link }}"
+            {% if cta_aria_label != blank %}
+              aria-label="{{ cta_aria_label }}"
+            {% endif %}
+          >
+            {{ image_banner }}
+          </a>
+        {% else %}
+          <div class="image-banner__banner">
+            {{ image_banner }}
+          </div>
+        {% endif %}
+        <div class="image-banner__content">
+          {{ text_content }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,190 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet: Product Gallery (product-gallery)
+
+  @param {String} [block_class] - Block level class to apply to all elements.
+------------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign gallery_class = 'product-gallery '
+
+  if block_class
+    assign gallery_class = gallery_class | append: '#__product-gallery ' | replace: '#', block_class
+  endif
+
+  unless id
+    assign id = 1
+  endunless
+
+  unless image_size
+    assign image_size = product.images.size
+  endunless
+-%}
+
+<div
+  class="ar-quicklook-overlay"
+  data-shopify-3d-variant-id="{{ product.selected_or_first_available_variant.id }}"
+  style="display: none;">
+</div>
+
+<div class="product-gallery is-loading">
+  <div
+    class="product-gallery__main knockout-image"
+  >
+    <div
+      class="
+        product-gallery__featured-carousel knockout-image
+        {% if image_size > 1 %}swiper-container{% endif %}
+      "
+      js-product-gallery="featuredCarousel"
+    >
+
+      {% if image_size <= 1 %}
+        {% capture image_attributes %}
+          data-image-id="{{ product.featured_image.id }}"
+          data-zoom="{{ product.featured_image | img_url: 'original' }}"
+        {% endcapture %}
+
+        {% render 'responsive-image' with
+          image_attributes: image_attributes,
+          image: product.featured_image,
+          max_height: 1280,
+          max_width: 900,
+          wrapper_attributes: 'js-product-gallery="featuredImage"',
+          wrapper_class: 'product-gallery__featured-image knockout-image',
+          image_class: 'knockout-image'
+        %}
+
+      {% else %}
+        <ul class="swiper-wrapper knockout-image">
+
+          {% for media in product.media %}
+            {% unless media.media_type == 'video' %}
+                {% if media.media_type == 'model' %}
+                  <li class="swiper-slide knockout-image model">
+                    {{ media | model_viewer_tag: ar: 'true' }}
+                  </li>
+                {% else %}
+                  <li class="swiper-slide knockout-image">
+                    {% capture image_attributes %}
+                      data-image-id="{{ media.id }}"
+                      data-zoom="{{ media.preview_image | img_url: 'original' }}"
+                    {% endcapture %}
+
+                    {% render 'responsive-image' with
+                      image_attributes: image_attributes,
+                      image: media.preview_image,
+                      max_height: 1280,
+                      max_width: 900,
+                      wrapper_attributes: 'js-product-gallery="featuredImage"',
+                      wrapper_class: 'product-gallery__featured-image knockout-image',
+                      image_class: 'knockout-image lazyload intial-image-load loading-image'
+                    %}
+                  </li>
+                {% endif %}
+            {% endunless %}
+          {% endfor %}
+
+        </ul>
+      {% endif %}
+    </div>
+    <div
+      class="product-gallery__pagination swiper-pagination"
+      js-product-gallery="pagination"
+    ></div>
+  </div>
+
+  {% unless hide_thumbnail_nav %}
+    {% if product.images.size > 1 %}
+      {% assign image_counter = 0 %}
+      <div class="thumbnail-container">
+        <div
+          id="ProductGalleryThumbnails-{{ id }}"
+          class="swiper-container thumbnail-carousel"
+          js-carousel="container"
+          js-product-gallery="thumbnailCarousel"
+          data-carousel-loop="{{ settings.enable_loop_slider }}"
+        >
+          <ul class="swiper-wrapper product-gallery__thumbnail-carousel">
+            {% comment %}
+            ------------------------------------------------------------------------------
+              Product images
+            ------------------------------------------------------------------------------
+            {% endcomment %}
+            {% for media in product.media %}
+              {% unless media.attached_to_variant? or media.media_type == 'video' %}
+                <li
+                  class="
+                    product-gallery__thumbnail
+                    swiper-slide
+                    {% if forloop.index0 == 0 %}is-active{% endif %}
+                  "
+                  data-id="{{ image_counter }}"
+                  js-product-gallery="thumbnail"
+                >
+                  <a
+                    href="{{ media.preview_image.src | img_url: '480x480' }}"
+                    data-thumbnail-id="{{ media.id }}"
+                  >
+                    <img
+                      class="
+                        product-gallery__thumbnail-image
+                        lazyload
+                        intial-image-load
+                        loading-image
+                        knockout-image
+                      "
+                      src="{{ media.preview_image.src | img_url: '1x1.33' }}"
+                      alt="{{ media.alt | escape }}"
+                      data-aspectratio="{{ media.preview_image.aspect_ratio }}"
+                      data-src="{{ media.preview_image.src | img_url: '160x160' }}"
+                    >
+                  </a>
+                </li>
+              {% endunless %}
+
+              {% comment %}
+              ------------------------------------------------------------------------------
+                Variant-based images
+              ------------------------------------------------------------------------------
+              {% endcomment %}
+              {% for variant in image.variants %}
+                {% if image.attached_to_variant? %}
+                  <li
+                    class="
+                      product-gallery__thumbnail
+                      swiper-slide
+                      {% if forloop.index0 == 0 %}is-active{% endif %}
+                    "
+                    data-id="{{ image_counter }}"
+                    data-variant-id="{{ variant.id }}"
+                    js-product-gallery="thumbnail"
+                  >
+                    <a
+                      href="{{ image.src | img_url: '480x480' }}"
+                      data-thumbnail-id="{{ image.id }}"
+                    >
+                      <img
+                        class="product-gallery__thumbnail-image knockout-image"
+                        alt="{{ image.alt | escape }}"
+                        src="{{ image.src | img_url: '160x160' }}"
+                      >
+                    </a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+
+              {% assign image_counter = image_counter | plus: 1 %}
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="swiper-button-next swiper-button" js-product-gallery="next">
+          {% render 'icon-direction' with icon: 'arrow', direction: 'chevron-down' %}
+        </div>
+        <div class="swiper-button-prev swiper-button" js-product-gallery="prev">
+          {% render 'icon-direction', with icon: 'arrow', direction: 'chevron-up' %}
+        </div>
+      </div>
+    {% endif %}
+  {% endunless %}
+</div>

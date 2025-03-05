@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[165],{7089:function(e,u,n){n.r(u),n.d(u,{default:function(){return t}});var t={name:"ProductFeatures"}}}]);
+//# sourceMappingURL=component.product-features.js.map?v=1733162424563

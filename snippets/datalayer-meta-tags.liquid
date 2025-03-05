@@ -1,0 +1,52 @@
+{% liquid
+  case request.page_type
+    when 'collection'
+      assign page_name_l5 = 'plp'
+    when 'product'
+      assign page_name_l5 = 'pdp'
+    when 'page'
+      assign page_name_l5 = 'landing'
+    when 'blog'
+      assign page_name_l5 = 'blog'
+    when 'index'
+      assign page_name_l5 = 'home'
+    when 'search'
+      assign page_name_l5 = 'search'
+    when 'password'
+      assign page_name_l5 = 'customer'
+  endcase
+
+  if request.page_type contains 'customer'
+    assign page_name_l5 = 'customer'
+  endif
+
+  if request.path contains 'orders' and checkout
+    assign page_name_l5 = 'customer'
+    assign page_name_l8 = 'order-status'
+  elsif checkout
+    assign page_name_l5 = 'checkout'
+    assign page_name_l8 = 'checkout'
+  elsif request.page_type == 'index'
+    assign page_name_l8 = 'hyperx-store-home'
+  else
+    assign page_name_l8 = request.path | split: '/' | last | split: '?' | first
+  endif
+%}
+
+<meta name="segment" content="consumer.home">
+<meta name="bu" content="ps">
+
+{% unless page_name_l5 == blank %}
+  <meta name="page_level" content="{{ page_name_l5 }}">
+{% endunless %}
+
+{% unless page_name_l8 == blank %}
+  <meta name="simple_title" content="{{ page_name_l8 }}">
+{% endunless %}
+
+
+<meta name="product_type" content="Accessories">
+<meta name="family" content="HyperX">
+
+<meta name="target_country" content="{{ settings.store_code | downcase }}">
+<meta name="hp_design_version" content="hyperx_udl">

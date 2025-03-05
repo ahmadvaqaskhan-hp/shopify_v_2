@@ -1,0 +1,411 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Gamer bio (gamer-bio)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.gamer-bio.css' | asset_url | stylesheet_tag }}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "gamer-bio", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+{%- liquid
+  assign socials = 'discord,twitch,tiktok,instagram,youtube,vimeo' | split: ','
+  assign is_having_socials = 'is-hidden'
+
+  for social in socials
+    assign social_setting = 'social_' | append: social | append: '_link'
+    if settings[social_setting] != blank
+      assign is_having_socials = ''
+      break
+    endif
+  endfor
+-%}
+
+{%- capture is_one_column -%}
+  {% unless
+    section.settings.first_column_text != blank and
+    section.settings.second_column_text != blank
+  %}
+    gamer-bio__description--one
+  {% endunless %}
+{%- endcapture -%}
+
+{%- capture column_width_class -%}
+  {% assign column_class = 'm6' %}
+  {% if
+    section.settings.first_column_text != blank and
+    section.settings.second_column_text != blank
+  %}
+    {% assign column_class = 'm6' %}
+  {% else %}
+    {% assign column_class = 'm12' %}
+  {% endif %}
+
+  {{ column_class }}
+{%- endcapture -%}
+
+{%- capture icon_direction -%}
+  {% render 'icon-direction', icon: 'arrow', direction: 'up-right' %}
+{%- endcapture -%}
+
+{%- capture full_description -%}
+  {% unless section.settings.first_column_text == blank %}
+    {{ section.settings.first_column_text }}
+  {% endunless %}
+
+  {% unless section.settings.second_column_text == blank %}
+    {{ section.settings.second_column_text }}
+  {% endunless %}
+{%- endcapture -%}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="gamer-bio"
+  data-component-type="load"
+  data-section-schema="{% if request.design_mode %}{'blocks': [{% for block in section.blocks %}{ 'type': {{ block.type | json | escape }}, 'settings': {{ block.settings | json | escape }} }{% unless forloop.last %},{% endunless %}{% endfor %}],'section': { 'id': {{ section.id | json | escape }}, 'type': 'gamer-bio', 'settings': {{ section.settings | json | escape }} }}{% endif %}"
+>
+  <gamer-bio
+    v-if="getComponentVisible('gamer-bio')"
+    v-cloak
+    :liquid="{
+      sectionId: {{ section.id | json | escape }}
+    }"
+    :settings= "{{ section.settings | json | escape }}"
+  >
+    <template #image>
+      {% render 'responsive-image' with
+        image: section.settings.gamer_photo,
+        wrapper_class: 'gamer-bio__image',
+        max_height: 392,
+        max_width: 520
+      %}
+    </template>
+  </gamer-bio>
+
+  {% comment %}
+  -----------------------------------------------------------------------------
+    Loading state.
+  -----------------------------------------------------------------------------
+  {% endcomment %}
+  <div v-if="!getComponentActive('gamer-bio')">
+    <div class="gamer-bio is-loading critical-component-clear liquid">
+      <div class="container gamer-bio__container">
+        <div class="row gamer-bio__heading">
+
+          {% unless section.settings.gamer_photo == blank %}
+            <div class="col xs12 m6">
+              {% render 'responsive-image' with
+                image: section.settings.gamer_photo,
+                wrapper_class: 'gamer-bio__image',
+                max_height: 392,
+                max_width: 520
+              %}
+            </div>
+          {% endunless %}
+
+          <div class="col xs12 m6">
+            {% unless section.settings.gamer_name == blank %}
+              <div class="h3 gamer-bio__name">
+                {{ section.settings.gamer_name }}
+              </div>
+            {% endunless %}
+
+            <div class="gamer-bio__socials {{ is_having_socials | strip }}">
+              {% for social in socials %}
+                {% assign social_setting = 'social_' | append: social | append: '_link' %}
+
+                {% unless settings[social_setting] == blank %}
+                  <a class="gamer-bio__icon" href="{{ settings[social_setting] }}" aria-label="social-icon">
+                    {% render 'icon-social', icon: social %}
+                  </a>
+                {% endunless %}
+              {% endfor %}
+            </div>
+
+            <div class="gamer-bio__fields">
+              <div class="gamer-bio__field">
+                <b>{{ section.settings.field_1_title }}</b> {{ section.settings.field_1_desc }}
+              </div>
+              <div class="gamer-bio__field">
+                <b>{{ section.settings.field_2_title }}</b> {{ section.settings.field_2_desc }}
+              </div>
+              <div class="gamer-bio__field">
+                <b>{{ section.settings.field_3_title }}</b> {{ section.settings.field_3_desc }}
+              </div>
+              <div class="gamer-bio__field">
+                <b>{{ section.settings.field_4_title }}</b> {{ section.settings.field_4_desc }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {% unless
+          section.settings.first_column_text == blank and
+          section.settings.second_column_text == blank
+        %}
+          <div class="gamer-bio__description h6 mobile is-collapsed">
+            {% if
+              section.settings.truncate and
+              full_description.size >= section.settings.truncate_min
+            %}
+              <div class="gamer-bio__short">
+                {{ full_description | truncate: section.settings.truncate_at, '...' }}
+              </div>
+
+              <div class="gamer-bio__full">
+                {{ full_description }}
+              </div>
+
+              <button class="gamer-bio__expand">
+                {{ 'general.gamer_bio.read_more' | t }}
+              </button>
+            {% else %}
+              {{ full_description }}
+            {% endif %}
+          </div>
+
+          <div class="row gamer-bio__description {{ is_one_column | strip }} desktop">
+            {% unless section.settings.first_column_text == blank %}
+              <div class="col xs12 {{ column_width_class | strip }} body-1">
+                {{ section.settings.first_column_text }}
+              </div>
+            {% endunless %}
+
+            {% unless section.settings.second_column_text == blank %}
+              <div class="col xs12 {{ column_width_class | strip }} body-1">
+                {{ section.settings.second_column_text }}
+              </div>
+            {% endunless %}
+          </div>
+        {% endunless %}
+
+        {% unless section.settings.download_header == blank %}
+          <div class="row col xs12 m6 h5 gamer-bio__wallpaper">
+            {{ section.settings.download_header }}
+          </div>
+        {% endunless %}
+
+        <div class="row">
+          <div class="col xs6 m3">
+
+            {% unless section.settings.download_desktop_header == blank %}
+              <div class="label gamer-bio__label">
+                {{ section.settings.download_desktop_header }}
+              </div>
+            {% endunless %}
+
+            {% unless section.settings.download_desktop == blank %}
+              <div class="gamer-bio__links">
+                {% assign desktop_links = section.settings.download_desktop | replace: '<p>', '' | split: '</p>' %}
+
+                {% for desktop_link in desktop_links %}
+                  {% if desktop_link contains 'href="' %}
+                    {{ desktop_link | replace: 'href="', 'class="text-link" href="' | replace: '</a>', icon_direction | append: '</a>' }}
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endunless %}
+
+          </div>
+
+          <div class="col xs6 m3">
+            {% unless section.settings.download_mobile_header == blank %}
+              <div class="label gamer-bio__label">
+                {{ section.settings.download_mobile_header }}
+              </div>
+            {% endunless %}
+
+            {% unless section.settings.download_mobile == blank %}
+              <div class="gamer-bio__links">
+                {% assign mobile_links = section.settings.download_mobile | replace: '<p>', '' | split: '</p>'%}
+
+                {% for mobile_link in mobile_links %}
+                  {% if mobile_link contains 'href="' %}
+                    {{ mobile_link | replace: 'href="', 'class="text-link" href="' | replace: '</a>', icon_direction | append: '</a>'}}
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endunless %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Gamer Bio",
+  "class": "index-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "gamer_name",
+      "label": "Gamer name",
+      "default": "Gamer name"
+    },
+    {
+      "type": "image_picker",
+      "id": "gamer_photo",
+      "label": "Gamer photo"
+    },
+    {
+      "type": "header",
+      "content": "Additional fields"
+    },
+    {
+      "type": "text",
+      "id": "field_1_title",
+      "label": "Field 1 title",
+      "default": "Location:"
+    },
+    {
+      "type": "text",
+      "id": "field_1_desc",
+      "label": "Field 1 Description"
+    },
+    {
+      "type": "text",
+      "id": "field_2_title",
+      "label": "Field 2 title",
+      "default": "Platform:"
+    },
+    {
+      "type": "text",
+      "id": "field_2_desc",
+      "label": "Field 2 Description"
+    },
+    {
+      "type": "text",
+      "id": "field_3_title",
+      "label": "Field 3 title",
+      "default": "Favourite Games:"
+    },
+    {
+      "type": "text",
+      "id": "field_3_desc",
+      "label": "Field 3 Description"
+    },
+    {
+      "type": "text",
+      "id": "field_4_title",
+      "label": "Field 4 title",
+      "default": "Additional:"
+    },
+    {
+      "type": "text",
+      "id": "field_4_desc",
+      "label": "Field 4 Description"
+    },
+    {
+      "type": "header",
+      "content": "Columns"
+    },
+    {
+      "type": "richtext",
+      "id": "first_column_text",
+      "label": "Description (Column 1)"
+    },
+    {
+      "type": "richtext",
+      "id": "second_column_text",
+      "label": "Description (Column 2)"
+    },
+    {
+      "type": "header",
+      "content": "Truncation"
+    },
+    {
+      "type": "checkbox",
+      "id": "truncate",
+      "label": "Truncate mobile text",
+      "info": "Adds read more/less to mobile description",
+      "default": true
+    },
+    {
+      "type": "number",
+      "id": "truncate_min",
+      "label": "Truncate minimum",
+      "info": "The minimum number of characters that must exist before truncating occurs. Default: 700",
+      "default": 700
+    },
+    {
+      "type": "number",
+      "id": "truncate_at",
+      "label": "Truncate at",
+      "info": "The number of characters to display in the shortened description before truncating occurs. Default: 500",
+      "default": 500
+    },
+    {
+      "type": "header",
+      "content": "Download wallpaper"
+    },
+    {
+      "type": "text",
+      "id": "download_header",
+      "label": "Download wallpaper title",
+      "default": "Download wallpaper"
+    },
+    {
+      "type": "text",
+      "id": "download_desktop_header",
+      "label": "Download desktop header",
+      "default": "Desktop"
+    },
+    {
+      "type": "richtext",
+      "id": "download_desktop",
+      "label": "Download Desktop",
+      "default": "<p>1920 x 1200</p><p>2560 x 1200</p><p>2560 x 1440</p><p>3200 x 1800</p><p>3840 x 2160</p><p>5760 x 1080</p><p>11520 x 2160</p>"
+    },
+    {
+      "type": "text",
+      "id": "download_mobile_header",
+      "label": "Download mobile header",
+      "default": "Mobile"
+    },
+    {
+      "type": "richtext",
+      "id": "download_mobile",
+      "label": "Download mobile",
+      "default": "<p>720 x 1280</p><p>750 x 1334</p><p>1080 x 1920</p>"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "field",
+      "name": "Field",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "header",
+          "content": "Additional fields"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Field title",
+          "default": "Location:"
+        },
+        {
+          "type": "text",
+          "id": "desc",
+          "label": "Description"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Gamer Bio",
+      "category": "Custom Content Block"
+    }
+  ]
+}
+{% endschema %}

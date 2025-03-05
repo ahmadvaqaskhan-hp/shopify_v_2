@@ -1,0 +1,104 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet: Newsletter callout (newsletter-callout)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.newsletter-callout.css' | asset_url | stylesheet_tag }}
+
+<div class="newsletter-callout is-loading liquid" js-newsletter="container">
+  <div class="newsletter-callout__header">
+    <h2 class="newsletter-callout__title h5" for="Email">
+      {{ 'general.newsletter_form.title' | t }}
+    </h2>
+
+    <p class="newsletter-callout__subtitle body-1">
+      {{ 'general.newsletter_form.subtitle' | t }}
+    </p>
+  </div>
+
+  <div class="newsletter-callout__form">
+    {% form 'customer', id: 'NewsletterCallout', js-newsletter: 'form' %}
+      {{ form.errors | default_errors }}
+
+      {% if form.posted_successfully? %}
+        <p>{{ 'general.newsletter_form.confirmation' | t }}</p>
+      {% else %}
+
+        <div class="newsletter-callout__input-group input-group">
+          <input
+            name="contact[tags]"
+            value="newsletter"
+            type="hidden"
+          >
+
+          <div class="newsletter-callout__field input-group__control">
+            <input
+              id="NewsletterCallout-Email"
+              class="newsletter-callout__input"
+              autocapitalize="off"
+              autocorrect="off"
+              name="contact[email]"
+              placeholder="{{ 'general.newsletter_form.placeholder' | t }}"
+              required
+              type="email"
+              js-newsletter="email"
+            >
+
+            <label
+              class="newsletter-callout__label caption"
+              for="NewsletterCallout-Email"
+            >
+              {{ 'general.newsletter_form.label' | t }}
+            </label>
+          </div>
+
+          <div class="input-group__addon">
+            <button
+              id="Subscribe"
+              class="newsletter-callout__submit button button--primary {% if require_consent %}is-disabled{% endif %}"
+              js-newsletter="submit"
+            >
+              <span>{{ 'general.newsletter_form.submit' | t }}</span>
+              {% render 'icon-direction', icon: 'arrow', direction: 'up-right' %}
+            </button>
+          </div>
+        </div>
+        {% if consent_content %}
+          <div class="
+            checkbox__container
+            newsletter-callout__consent
+            {% if require_consent %}
+              newsletter-callout__consent--required
+            {% endif %}
+          ">
+            {% if require_consent %}
+              <input
+                id="NewsletterCalloutConsent"
+                class="checkbox__input"
+                name="consent"
+                type="checkbox"
+                aria-checked="false"
+                js-newsletter="consent"
+                required
+              >
+            {% endif %}
+
+            <label
+              class="body-2 checkbox__label"
+              for="NewsletterCalloutConsent"
+            >
+              {{ consent_content }}
+            </label>
+          </div>
+        {% endif %}
+      {% endif %}
+    {% endform %}
+
+    {% render 'klaviyo-newsletter-signup',
+      klaviyo_form_id: 'klaviyoNewsletter',
+      consent_method: 'Newsletter',
+      source: 'Footer newsletter'
+    %}
+
+  </div>
+</div>

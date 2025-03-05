@@ -1,0 +1,33 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet: Payment icons (payment-icons)
+
+  @param {String} [block_class] - Block level class to apply to all elements.
+  @param {Boolean} [center] - Center icons.
+  @param {String} [class] - Additional classes.
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.payment-icons.css' | asset_url | stylesheet_tag }}
+
+{% assign modifiers = '' %}
+
+{% if class %}
+  {% assign modifiers = modifiers | append: class %}
+{% endif %}
+
+{% assign types = shop.enabled_payment_types %}
+
+{% comment %}
+  Hardcode payment types for HP transactional stores
+{% endcomment %}
+{% if settings.store_transactional_type == 'non-transactional-hp' %}
+  {% assign types = 'american_express, master, visa' | split: ', ' %}
+{% endif %}
+
+<ul class="payment-icons {{ modifiers }}">
+  {% for type in types %}
+    <li class="payment-icons__item">
+      {{ type | payment_type_svg_tag }}
+    </li>
+  {% endfor %}
+</ul>

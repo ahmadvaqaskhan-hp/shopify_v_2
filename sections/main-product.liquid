@@ -1,0 +1,254 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Section: Main product
+-----------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.main-product.css' | asset_url | stylesheet_tag }}
+{{ 'component.product-prices.css' | asset_url | stylesheet_tag }}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "main-product", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+{% capture breadcrumb %}
+  {% if collection.url %}
+    {
+      "title": {{ collection.title | json }},
+      "url": {{ collection.url | json }}
+    }
+  {% else %}
+    false
+  {% endif %}
+{% endcapture %}
+
+{% capture featured_image_variant %}
+  {% render 'main-product-image-variant' with image: product.featured_image %}
+{% endcapture %}
+
+{% assign is_gift_card = false %}
+{% assign sanitized_product_type = product.type | downcase %}
+{% assign metafield_lang = request.locale.iso_code | downcase %}
+{% assign metafield_namespace = metafield_lang | append: '_product' %}
+{% assign translate_title = product.metafields[metafield_namespace].title %}
+{% assign translate_shortDesc = product.metafields[metafield_namespace].short_desc | default: '[]' | escape %}
+{% assign shipping_message = product.metafields.global.shipping_message | escape | default: '' %}
+{% if sanitized_product_type == 'gift card' %}
+  {% assign is_gift_card = true %}
+{% endif %}
+{% assign product_id = 'gid://shopify/Product/' | append: product.id %}
+{% capture reviews %}
+  {% render 'yotpo-reviews', yotpo_widget: 'pdp_star_rating', product: product, item: item %}
+{% endcapture %}
+{% capture liquid_data %}
+
+  {
+    liquid: true,
+    available: {{ product.available | json | escape }},
+    compareAtPrice: {{ product.compare_at_price | json | escape }},
+    description: {{ product.description | json | escape }},
+    handle: {{ product.handle | json | escape }},
+    id: {{ product_id | json | escape }},
+    hasOnlyDefaultVariant: {{ product.has_only_default_variant | json | escape }},
+    compareAtPrice: {
+      amount: {{ product.compare_at_price | json | escape }},
+      currencyCode: {{ cart.currency.iso_code | json | escape }},
+      min: {{ product.compare_at_price_min | json | escape }},
+      max: {{ product.compare_at_price_max | json | escape }},
+      varies: {{ product.compare_at_price_varies | json | escape }},
+    },
+    featuredImage: {
+      alt: {{ product.featured_image.alt | json | escape }},
+      height: {{ product.featured_image.height | json | escape }},
+      id: {{ product.featured_image.id | json | escape }},
+      width: {{ product.featured_image.width | json | escape }},
+      variant: {{ featured_image_variant | strip | strip_newlines }},
+    },
+    images: [
+      {% for image in product.images %}
+        {% capture image_variant %}
+          {% render 'main-product-image-variant' with image: image %}
+        {% endcapture %}
+        {
+          alt: {{ image.alt | json | escape }},
+          height: {{ image.height | json | escape }},
+          id: {{ image.id | json | escape }},
+          src: {{ image.src | json | escape }},
+          width: {{ image.width | json | escape }},
+          variant: {{ image_variant | strip | strip_newlines }}
+        }{% unless forloop.last %},{% endunless %}
+      {% endfor %}
+    ],
+    tags: {{ product.tags | json | escape }},
+    price: {
+      amount: {{ product.price | json | escape }},
+      currencyCode: {{ cart.currency.iso_code | json | escape }},
+      max: {{ product.price_max | json | escape }},
+      min: {{ product.price_min | json | escape }},
+      varies: {{ product.price_varies | json | escape }},
+    },
+    options: [
+      {% for option in product.options_with_values %}
+        {
+          index: {{ forloop.index0 | json }},
+          name: {{ option.name | json | escape }},
+          values: [
+            {% for value in option.values %}
+              {{ value | json | escape }}{% unless forloop.last %},{% endunless %}
+            {% endfor %}
+          ]
+        }{% unless forloop.last %},{% endunless %}
+      {% endfor %}
+    ],
+    giftCard: {{ is_gift_card | json }},
+    preOrder: {{ product.metafields.global.pre_order | default: false | json }},
+    sectionId: {{ section.id | json | escape }},
+    title: {{ product.title | json | escape }},
+    allowPreOrder: {{ settings.pre_order_pdp | json | escape }},
+    enableShippingMessage: {{ settings.enable_shipping_message | json | escape }},
+    shippingMessage: {{ shipping_message | json | escape }},
+    type: {{ product.type | json | escape }},
+    variants: [{% render 'format-variant' for product.variants as variant, with product: product %}],
+    translations: {
+      title: {{ translate_title | json | escape }},
+      shortDesc: {{ translate_shortDesc | escape }},
+    },
+  }
+{% endcapture %}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="main-product"
+  data-component-type="load"
+  data-section-schema="{% if request.design_mode %}{'blocks': [{% for block in section.blocks %}{ 'type': {{ block.type | json | escape }}, 'settings': {{ block.settings | json | escape }} }{% unless forloop.last %},{% endunless %}{% endfor %}],'section': { 'id': {{ section.id | json | escape }}, 'type': 'main-product', 'settings': {{ section.settings | json | escape }} }}{% endif %}"
+>
+  <main-product
+    v-if="getComponentVisible('main-product')"
+    v-cloak
+    handle="{{ product.handle | escape }}"
+    :liquid="{{ liquid_data | strip | strip_newlines }}"
+    :product="product"
+    :media="[{% for media in product.media %} {{ media | json | escape }} {% unless forloop.last %},{% endunless %}{% endfor %}]"
+    :variant="{
+      ...variant,
+      inventory: {{ product.selected_or_first_available_variant.inventory_quantity | json | escape }},
+    }"
+    :enable-breadcrumbs="{{ settings.enable_breadcrumbs | json }}"
+    :breadcrumb="{{ breadcrumb | escape }}"
+    reviews="{{ reviews | strip | strip_newlines | escape }}"
+    @update-request-object="updateRequestObject"
+  >
+    <template #galleryplaceholder>
+      {% render 'product-gallery' with
+        block_class: 'main-product',
+        product: product
+      %}
+    </template>
+  </main-product>
+
+  {% comment %}
+  ----------------------------------------------------------------------------
+    Loading state.
+  ----------------------------------------------------------------------------
+  {% endcomment %}
+  <div v-if="!getComponentActive('main-product')">
+    <div
+      class="
+        template-product__container
+        component-section
+        is-loading
+        critical-component-clear
+        liquid
+      "
+    >
+      <div class="template-product__main">
+      {% if settings.enable_breadcrumbs %}
+        <div class="row container">
+          <div class="template-product__header">
+            <div class="col xs12">
+              <div class="template-product__breadcrumb">
+                {% render 'breadcrumb',
+                  product_title: product.title,
+                %}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+        <div class="row container">
+          <div class="col xs12 m6 l7 xl8">
+            <div class="template-product__gallery">
+              {% render 'product-gallery' with
+                block_class: 'main-product',
+                product: product
+              %}
+            </div>
+          </div>
+
+          <div class="col xs12 m6 l5 xl4 container">
+            <div class="template-product__aside">
+              <div class="main-product__form">
+                {% render 'product-form' with product: product,
+                  section_id: section.id,
+                  class: 'animate-on-load product-form--non-transactional',
+                  translate_title: translate_title,
+                  translate_shortDesc: translate_shortDesc
+                %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product",
+  "settings": [
+    {
+      "type": "text",
+      "id": "test",
+      "label": "Test setting"
+    },
+    {
+      "type": "select",
+      "id": "colour",
+      "label": "Colour",
+      "options": [
+        {
+          "group": "Brand",
+          "value": "primary",
+          "label": "Primary"
+        },
+        {
+          "group": "Brand",
+          "value": "secondary",
+          "label": "Secondary"
+        },
+        {
+          "group": "Background",
+          "value": "dark",
+          "label": "Dark"
+        },
+        {
+          "group": "Background",
+          "value": "light",
+          "label": "Light"
+        },
+        {
+          "group": "Background",
+          "value": "white",
+          "label": "White"
+        }
+      ],
+      "default": "primary"
+    }
+  ]
+}
+{% endschema %}

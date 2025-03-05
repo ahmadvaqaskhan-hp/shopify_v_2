@@ -1,0 +1,134 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Main cart (main-cart)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.main-cart.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign checkout_string = 'cart.checkout' | t
+  assign continue_string = 'cart.continue_shopping' | t
+-%}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "main-cart", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+{% assign partner_feature = false %}
+{% if settings.enable_partner_feature %}
+  {% capture partner_feature %}
+    {
+      image: {
+        src: {{ settings.partner_feature_image | image_url | json | escape }},
+        alt: {{ settings.partner_feature_image.alt | json | escape }},
+        height: {{ settings.partner_feature_image.height }},
+        width: {{ settings.partner_feature_image.width }},
+        aspect_ratio: {{ settings.partner_feature_image.aspect_ratio }}
+      },
+      caption: {{ settings.partner_feature_caption | json | escape }}
+    }
+  {% endcapture %}
+{% endif %}
+
+<section
+  aria-labelledby="template-title"
+  data-component-handle="main-cart"
+  data-component-type="load"
+  data-section-schema="{% if request.design_mode %}{'blocks': [{% for block in section.blocks %}{ 'type': {{ block.type | json | escape }}, 'settings': {{ block.settings | json | escape }} }{% unless forloop.last %},{% endunless %}{% endfor %}],'section': { 'id': {{ section.id | json | escape }}, 'type': 'main-cart', 'settings': {{ section.settings | json | escape }} }}{% endif %}"
+>
+  <main-cart
+    v-if="getComponentVisible('main-cart')"
+    v-cloak
+    :payments="[
+      {%- for type in shop.enabled_payment_types -%}
+        {
+          icon: {{ type | payment_type_svg_tag | json | escape }},
+          type: {{ type | handle | json | escape }}
+        }{%- unless forloop.last -%},{%- endunless -%}
+      {%- endfor -%}
+    ]"
+    :partner-feature="{{ partner_feature }}"
+  ></main-cart>
+
+  {% comment %}
+  -----------------------------------------------------------------------------
+    Loading state.
+  -----------------------------------------------------------------------------
+  {% endcomment %}
+  <div v-if="!getComponentActive('main-cart')">
+    <form
+      class="
+        main-cart critical-component-clear
+        {% if cart.item_count > 0 %}
+          is-loading
+        {% endif %}
+        critical-component-clear
+        liquid
+      "
+      action="/cart"
+      method="post"
+    >
+      <div class="container">
+        <div class="row">
+          <div class="col xs12 l11 offset-l1">
+            <h1 class="main-cart__title h4">
+              {{ 'cart.title' | t }}
+            </h1>
+          </div>
+          {% if cart.item_count > 0 %}
+              <div class="col xs12 l5 offset-l1">
+                <div class="main-cart__line-items">
+                  {% for item in cart.items %}
+                    {% render 'line-item' with
+                      block_class: 'main-cart',
+                      index: forloop.index0,
+                      item: item,
+                      loading_animation: true,
+                    %}
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="col xs12 l4 offset-l1">
+                <aside class="main-cart__sidebar">
+                  {% render 'cart-summary' with cart: cart %}
+                </aside>
+              </div>
+            {% else %}
+              <div class="col xs12 m6 offset-m3 text-center">
+                <h1
+                  class="main-cart__title text-heading-2xl text-center"
+
+                >
+                  {{ 'cart.title' | t }}
+                </h1>
+                <p
+                  class="main-cart__empty-text text-body-m"
+                >
+                  {{ 'cart.empty.text' | t }}
+                </p>
+                {% render 'btn' with
+                  class: 'main-cart__continue',
+                  modifiers: 'primary large',
+                  label: continue_string,
+                  url: routes.root_url,
+                  show_icon: false,
+                %}
+              </div>
+            {% endif %}
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Cart",
+  "settings": []
+}
+{% endschema %}

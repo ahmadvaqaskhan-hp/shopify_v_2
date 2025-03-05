@@ -1,0 +1,101 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Snippet: Menu drawer
+  - Statically rendered navigation list for SEO purposes.
+-----------------------------------------------------------------------------
+{% endcomment %}
+<div
+  class="menu-drawer is-hidden critical-component-hide liquid"
+  js-menu-drawer="container"
+>
+  <div class="menu-drawer__navigation">
+    <nav class="menu-drawer__menus">
+
+      {% comment %}
+      -----------------------------------------------------------------------------
+        Tier 1.
+      -----------------------------------------------------------------------------
+      {% endcomment %}
+      <ul class="menu-drawer__menu menu-drawer__tier1">
+        {% for tier1 in linklists[section.settings.mobile].links %}
+          <li class="menu-drawer__menu-item">
+            <a
+              class="menu-drawer__link text-body-m text-heading-l-desktop"
+              href="{{ tier1.url }}"
+              tabindex="-1"
+            >
+              {{ tier1.title }}
+            </a>
+
+            {{ tier1.level }}
+
+            {% if tier1.levels == 0 %}
+              {% continue %}
+            {% endif %}
+
+            {% comment %}
+            -----------------------------------------------------------------------------
+              Tier 2.
+            -----------------------------------------------------------------------------
+            {% endcomment %}
+            <ul class="menu-drawer__menu menu-drawer__tier2">
+              {% for tier2 in tier1.links %}
+                <li class="menu-drawer__menu-item">
+                  <a
+                    class="menu-drawer__link text-body-m text-heading-l-desktop"
+                    href="{{ tier2.url }}"
+                    tabindex="-1"
+                  >
+                    {{ tier2.title }}
+                  </a>
+
+                  {% if tier2.levels == 0 %}
+                    {% continue %}
+                  {% endif %}
+
+                  {% comment %}
+                  -----------------------------------------------------------------------------
+                    Tier 3.
+                  -----------------------------------------------------------------------------
+                  {% endcomment %}
+                  <ul class="menu-drawer__menu menu-drawer__tier3">
+                    {% for tier3 in tier2.links %}
+                      <li class="menu-drawer__menu-item">
+                        <a
+                          class="
+                            menu-drawer__link
+                            text-body-m
+                            text-heading-l-desktop
+                          "
+                          href="{{ tier3.url }}"
+                          tabindex="-1"
+                        >
+                          {{ tier3.title }}
+                        </a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </li>
+              {% endfor %}
+            </ul>
+          </li>
+        {% endfor %}
+
+        {% comment %}
+        -----------------------------------------------------------------------------
+          Account link.
+        -----------------------------------------------------------------------------
+        {% endcomment %}
+        <li class="menu-drawer__menu-item">
+          <a
+            class="menu-drawer__link text-body-m text-heading-l-desktop"
+            href="{{ routes.account_url }}"
+            tabindex="-1"
+          >
+            {{ 'general.menu_drawer.account' | t }}
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>

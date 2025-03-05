@@ -1,0 +1,13 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet: Icons - custom
+  - Custom icons uploaded to Shopify as SVGs. The icon name must have a
+    matching asset in Shopify with the following naming convention:
+      icon_{{ name }}.svg
+------------------------------------------------------------------------------
+{% endcomment %}
+{%- if icon -%}
+  <span class="icon icon__{{ icon }}">
+    {{ 'icon_' | append: icon | append: '.svg' | file_url | img_tag }}
+  </span>
+{%- endif -%}

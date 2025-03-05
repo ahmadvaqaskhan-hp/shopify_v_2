@@ -1,0 +1,200 @@
+{% comment %}
+----------------------------------------------------------------------------
+  Template: Contact page
+  - Sends email to customer email defined in Shopify settings.
+  - Input and textarea values exceed 80 characters to prevent empty spaces
+    replacing the placeholder content.
+----------------------------------------------------------------------------
+{% endcomment %}
+
+{% liquid
+  assign page_redirect = page.url | append: '/?contact_posted=true#contact_form'
+  assign sanitized_iso_code = localization.country.iso_code | downcase
+  assign locale_translation = 'contact.countries.' | append: sanitized_iso_code
+  assign locale_translation_en = 'contact.countries_en.' | append: sanitized_iso_code
+%}
+
+<div class="template-contact">
+  <div class="container">
+    <div class="row">
+      <div class="col xs12 m8 offset-m2">
+        <h1 class="h3">{{ page.title }}</h1>
+
+        <div class="rte">
+          {{ page.content }}
+        </div>
+
+        {% form 'contact', return_to: page_redirect %}
+          {{ form.errors | default_errors }}
+
+          <div class="template-contact__wrapper">
+            <div class="template-contact__field">
+              <label for="ContactFormName">{{ 'contact.form.name' | t | append: '*' }}</label>
+
+              <input
+                id="ContactFormName"
+                name="contact[name]"
+                placeholder=""
+                type="text"
+                required="true"
+                value="{%- if form[name] -%}{{ form[name] }}{%- elsif customer -%}{{ customer.name }}{%- endif -%}"
+              >
+            </div>
+
+            <div class="template-contact__field">
+              <label for="ContactFormEmail">{{ 'contact.form.email' | t | append: '*' }}</label>
+
+              <input
+                id="ContactFormEmail"
+                autocapitalize="off"
+                autocomplete="off"
+                name="contact[email]"
+                placeholder=""
+                spellcheck="false"
+                type="email"
+                required="true"
+                value="{%- if form.email -%}{{ form.email }}{%- elsif customer -%}{{ customer.email }}{%- endif -%}"
+              >
+            </div>
+          </div>
+
+          <div class="template-contact__wrapper">
+            <div class="template-contact__field">
+              <label for="ContactFormPhone">{{ 'contact.form.phone' | t }}</label>
+
+              <input
+                id="ContactFormPhone"
+                name="contact[phone]"
+                pattern="[0-9\-]*"
+                placeholder="{{ 'contact.form.phone_placeholder' | t }}"
+                type="tel"
+                value="{%- if form[phone] -%}{{ form.phone }}{%- elsif customer -%}{{ customer.phone }}{%- endif -%}"
+              >
+            </div>
+          </div>
+
+          <div class="template-contact__wrapper">
+            <div class="template-contact__field">
+              <label for="ContactFormCountry">{{ 'contact.form.country' | t | append: '*' }}</label>
+                {% if settings.country_dropdown == blank %}
+                  <input type="hidden" name="contact[country]" value="{{ locale_translation_en | t }}">
+                {% endif %}
+              <select
+                id="ContactFormCountry"
+                {% if settings.country_dropdown != blank %}
+                  name="contact[country]"
+                  style="background-image: url({{ 'icon-caret-down.svg' | asset_url }});"
+                {% endif %}
+                required="true"
+                {% if settings.country_dropdown == blank %}
+                    disabled
+                {% endif %}
+              >
+                {% if settings.country_dropdown == blank %}
+                  <option selected="true" value="{{ locale_translation_en | t }}">{{ localization.country.name }}</option>
+                {% else %}
+                  {%- liquid
+                    assign countries_arr = settings.country_dropdown | downcase | split: ','
+                    for country in countries_arr
+                      assign sanitized_country = country | strip | downcase
+                      assign country_translation_key = 'contact.countries.' | append: sanitized_country
+                      assign country_translation_key_en = 'contact.countries_en.' | append: sanitized_country
+                      assign country_translation = country_translation_key | t
+                      assign country_translation_en = country_translation_key_en | t
+                      assign is_selected = ''
+
+                      if sanitized_iso_code == sanitized_country
+                        assign is_selected = 'selected="true"'
+                      endif
+
+                      echo '<option ' | append: is_selected | append: ' value="' | append: country_translation_en | append: '">' | append: country_translation | append: '</option>'
+                    endfor
+                  -%}
+                {% endif %}
+                <option value="Other">{{ 'contact.form.other' | t }}</option>
+              </select>
+            </div>
+            <div class="template-contact__field">
+              <label for="ContactFormLanguage">{{ 'contact.form.language' | t | append: '*' }}</label>
+
+              <select
+                id="ContactFormLanguage"
+                name="contact[language]"
+                style="background-image: url({{ 'icon-caret-down.svg' | asset_url }});"
+                required="true"
+              >
+                <option selected="true" value="English">{{ 'contact.languages.en' | t }}</option>
+                <option value="Arabic">{{ 'contact.languages.ar' | t }}</option>
+                <option value="German">{{ 'contact.languages.de' | t }}</option>
+                <option value="Spanish ESP">{{ 'contact.languages.es_419' | t }}</option>
+                <option value="Spanish LATAM">{{ 'contact.languages.es' | t }}</option>
+                <option value="French">{{ 'contact.languages.fr' | t }}</option>
+                <option value="Italian">{{ 'contact.languages.it' | t }}</option>
+                <option value="Polish">{{ 'contact.languages.pl' | t }}</option>
+                <option value="Portuguese">{{ 'contact.languages.pt' | t }}</option>
+                <option value="Russian">{{ 'contact.languages.ru' | t }}</option>
+                <option value="Vietnamese">{{ 'contact.languages.vi' | t }}</option>
+                <option value="Turkish">{{ 'contact.languages.tr' | t }}</option>
+                <option value="Thai">{{ 'contact.languages.th' | t }}</option>
+                <option value="Korean">{{ 'contact.languages.ko' | t }}</option>
+                <option value="Chinese Simplified">{{ 'contact.languages.zh_hans' | t }}</option>
+                <option value="Chinese Traditional">{{ 'contact.languages.zh_hant' | t }}</option>
+                <option value="Japanese">{{ 'contact.languages.ja' | t }}</option>
+                <option value="Other">{{ 'contact.form.other' | t }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="template-contact__wrapper">
+            <div class="template-contact__field">
+              <label for="ContactFormTopic">{{ 'contact.form.topic' | t | append: '*' }}</label>
+
+              <select
+                id="ContactFormTopic"
+                name="contact[topic]"
+                style="background-image: url({{ 'icon-caret-down.svg' | asset_url }});"
+                required="true"
+              >
+                <option value="customer_service">{{ 'contact.topics.customer_service' | t }}</option>
+                <option value="technical_support">{{ 'contact.topics.technical_support' | t }}</option>
+                <option value="warranty">{{ 'contact.topics.warranty' | t }}</option>
+                <option value="online_orders">{{ 'contact.topics.online_orders' | t }}</option>
+                <option value="marketing">{{ 'contact.topics.marketing' | t }}</option>
+                <option value="distributors">{{ 'contact.topics.distributors' | t }}</option>
+                <option value="other">{{ 'contact.form.other' | t }}</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="ContactFormMessage">{{ 'contact.form.message' | t | append: '*'}}</label>
+
+          <textarea
+            id="ContactFormMessage"
+            name="contact[body]"
+            placeholder="{{ 'contact.form.message_placeholder' | t }}"
+            rows="10"
+            required="true"
+          >
+            {%- if form.body -%}{{ form.body }}{%- endif -%}
+          </textarea>
+
+          {% if form.posted_successfully? %}
+            <p class="form-success">
+              {{ 'contact.form.post_success' | t }}
+            </p>
+          {% endif %}
+
+          <button
+            class="button button--primary"
+            type="submit"
+          >
+            {{ 'contact.form.send' | t }}
+            {% render 'icon-direction', icon: 'arrow', direction: 'up-right' %}
+          </button>
+        {% endform %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{%- render 'custom-content' -%}

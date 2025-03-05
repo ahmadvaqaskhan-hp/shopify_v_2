@@ -1,0 +1,165 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Title with description (title-with-description)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.title-with-description.css' | asset_url | stylesheet_tag }}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "title-with-description", "settings": {{ block.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+{%- capture full_description -%}
+  {% unless block.settings.description_col_1 == blank %}
+    {{ block.settings.description_col_1 }}
+  {% endunless %}
+
+  {% unless block.settings.description_col_2 == blank %}
+    {{ block.settings.description_col_2 }}
+  {% endunless %}
+{%- endcapture -%}
+
+{%- capture modifiers -%}
+  {% if
+    block.settings.description_col_1 != blank and
+    block.settings.description_col_2 != blank
+  %}
+    title-with-description__description--2-col
+  {% endif %}
+{%- endcapture -%}
+
+<section
+  aria-labelledby="section-title-{{ block.type }}"
+  class="title-with-description"
+  data-component-handle="title-with-description"
+  data-component-type="scroll"
+  data-section-schema
+>
+  <title-with-description
+    v-if="getComponentVisible('title-with-description')"
+    v-cloak
+    :section="{
+      settings: {
+        alignment: {{ block.settings.alignment | json | escape }},
+        description_col_1: {{ block.settings.description_col_1 | json | escape }},
+        description_col_2: {{ block.settings.description_col_2 | json | escape }},
+        truncate: {{ block.settings.truncate | json | escape }},
+        cta_text_1: {{ block.settings.cta_text_1 | json | escape }},
+        cta_style_1: {{ block.settings.cta_style_1 | json | escape }},
+        cta_link_1: {{ block.settings.cta_link_1 | json | escape }},
+        cta_text_2: {{ block.settings.cta_text_2 | json | escape }},
+        cta_style_2: {{ block.settings.cta_style_2 | json | escape }},
+        cta_link_2: {{ block.settings.cta_link_2 | json | escape }},
+        footnote: {{ block.settings.footnote | json | escape }},
+        title: {{ block.settings.title | json | escape }},
+        truncate_min: {{ block.settings.truncate_min }},
+      },
+      trunc_desc: {{ full_description | truncate: block.settings.truncate_at, '...' | json | escape }},
+      full_desc: {{ full_description | json | escape }},
+      full_desc_size: {{ full_description.size }},
+    }"
+    :modifiers="{{ modifiers | json | escape }}"
+  ></title-with-description>
+
+  {% comment %}
+  -----------------------------------------------------------------------------
+    Loading state.
+  -----------------------------------------------------------------------------
+  {% endcomment %}
+  <div v-if="!getComponentActive('title-with-description')">
+    <div class="container">
+      <div class="title-with-description__wrapper">
+        <div class="title-with-description__content {{ block.settings.alignment }}">
+          {% if block.settings.title != blank %}
+            <h3 class="title-with-description__title h3">
+              {{ block.settings.title }}
+            </h3>
+          {% endif %}
+
+          {% unless
+            block.settings.description_col_1 == blank and
+            block.settings.description_col_2 == blank
+          %}
+
+            <div
+              class="title-with-description__description h6 mobile is-collapsed"
+            >
+              {% assign truncate_min = block.settings.truncate_min | plus: 0 %}
+              {% if
+                block.settings.truncate and
+                full_description.size >= truncate_min
+              %}
+
+                <div class="title-with-description__short">
+                  {{ full_description | truncate: block.settings.truncate_at, '...' }}
+                </div>
+
+                <div class="title-with-description__full">
+                  {{ full_description }}
+                </div>
+
+                <button
+                  class="title-with-description__expand"
+                >
+                  {{ 'layout.general.read_more' | t }}
+                </button>
+              {% else %}
+                {{ full_description }}
+              {% endif %}
+            </div>
+
+            <div class="title-with-description__description h6 desktop {{ modifiers }}">
+              {% unless block.settings.description_col_1 == blank %}
+                <div class="title-with-description__col">
+                  {{ block.settings.description_col_1 }}
+                </div>
+              {% endunless %}
+
+              {% unless block.settings.description_col_2 == blank %}
+                <div class="title-with-description__col">
+                  {{ block.settings.description_col_2 }}
+                </div>
+              {% endunless %}
+            </div>
+          {% endunless %}
+
+          <div class="title-with-description__links-wrapper">
+            {% if block.settings.cta_text_1 != empty %}
+              <div class="title-with-description__link">
+                <a
+                  class="{{ block.settings.cta_style_1 }}"
+                  href="{{ block.settings.cta_link_1 }}"
+                >
+                  <span>{{ block.settings.cta_text_1 }}</span>
+                  {% render 'icon-direction', icon: 'arrow-up-right' %}
+                </a>
+              </div>
+            {% endif %}
+
+            {% if block.settings.cta_text_2 != empty %}
+              <div class="title-with-description__link">
+                <a
+                  class="{{ block.settings.cta_style_2 }}"
+                  href="{{ block.settings.cta_link_2 }}"
+                >
+                  <span>{{ block.settings.cta_text_2 }}</span>
+                  {% render 'icon-direction', icon: 'arrow-up-right' %}
+                </a>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="title-with-description__note">
+            {{ block.settings.footnote }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>

@@ -1,0 +1,106 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Snippet / Customers: Customers header
+  - Header and navigation shown on account templates.
+
+  @param {String} current_url - Manual override of current URL for
+  highlighting current active link.
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign customers_navigation = linklists[settings.customers_navigation]
+  assign log_out_string = 'customers.header.log_out' | t
+
+  capture plus_icon
+    render 'icon-misc' with icon: 'plus'
+  endcapture
+
+  for link in customers_navigation.links
+    if current_url == blank
+      if link.active
+        assign current_link = link.title
+        break
+      endif
+    else
+      if link.url == current_url
+        assign current_link = link.title
+        break
+      endif
+    endif
+  endfor
+-%}
+
+<div class="customers-header component-section no-margin-top padding-top">
+  <div class="customers-header__header container ">
+    <h2 class="customers-header__title text-heading-xl">
+      {{ 'customers.header.title' | t: name: customer.first_name }}
+    </h2>
+
+    {% render 'btn'
+      block_class: 'customers-header',
+      class: 'customers-header__mobile',
+      label: log_out_string,
+      modifiers: 'text',
+      show_icon: false,
+      url: routes.account_logout_url,
+    %}
+
+    {% render 'btn'
+      block_class: 'customers-header',
+      class: 'customers-header__desktop',
+      label: log_out_string,
+      url: routes.account_logout_url,
+    %}
+  </div>
+
+  {% comment %}
+  -----------------------------------------------------------------------------
+    Navigation.
+  -----------------------------------------------------------------------------
+  {% endcomment %}
+  <div class="customers-header__navigation container">
+    {% render 'btn'
+      attributes: 'aria-expanded="false" js-customers-header="toggle"',
+      block_class: 'customers-header',
+      class: 'customers-header__toggle subtitle-1',
+      icon: plus_icon,
+      label: current_link,
+      modifiers: 'text block',
+      type: 'button',
+    %}
+
+    {% if customers_navigation.links.size > 0 %}
+      <ul
+        class="customers-header__list"
+        js-customers-header="navigation"
+      >
+        {% for link in customers_navigation.links %}
+          {%- liquid
+            assign link_active = false
+
+            if current_url == blank
+              assign link_active = link.active
+            elsif link.url == current_url
+              assign link_active = true
+            endif
+          -%}
+
+          <li class="customers-header__list-item">
+            <a
+              class="
+                customers-header__link
+                text-body-m
+                {% if link_active %}
+                  is-active
+                {% endif %}
+              "
+              href="{{ link.url }}"
+            >
+              {{ link.title }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+</div>

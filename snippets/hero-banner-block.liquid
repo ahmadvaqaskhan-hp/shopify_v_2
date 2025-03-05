@@ -1,0 +1,693 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet: Hero banner block (hero-banner-block)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.hero-banner.css' | asset_url | stylesheet_tag }}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "hero-banner", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+{%- capture slides -%}
+  [
+    {% for i in (1..4) %}
+      {% assign video_url_string = 'slide_#_video_url' | replace: '#', i %}
+      {% assign image_string = 'slide_#_image' | replace: '#', i %}
+      {% assign alignment_string = 'slide_#_alignment' | replace: '#', i %}
+      {% assign heading_string = 'slide_#_heading' | replace: '#', i %}
+      {% assign desc_string = 'slide_#_desc' | replace: '#', i %}
+      {% assign primary_cta_text_string = 'slide_#_primary_cta_text' | replace: '#', i %}
+      {% assign primary_cta_aria_string = 'slide_#_primary_cta_aria' | replace: '#', i %}
+      {% assign primary_cta_link_string = 'slide_#_primary_cta_link' | replace: '#', i %}
+      {% assign secondary_cta_text_string = 'slide_#_secondary_cta_text' | replace: '#', i %}
+      {% assign secondary_cta_aria_string = 'slide_#_secondary_cta_aria' | replace: '#', i %}
+      {% assign secondary_cta_link_string = 'slide_#_secondary_cta_link' | replace: '#', i %}
+      {% assign banner_theme_string = 'slide_#_banner_theme' | replace: '#', i %}
+      {% assign video_url = block.settings[video_url_string] %}
+      {% assign image = block.settings[image_string] %}
+
+      {% if image or video_url != blank and video_url != '#' %}
+        {
+          video_url: {{block.settings[video_url_string] | json | escape }},
+          image: {{ block.settings[image_string] | replace: 'files/', '' | file_url | json | escape }},
+          alignment: {{ block.settings[alignment_string] | json | escape }},
+          heading: {{ block.settings[heading_string] | json | escape }},
+          desc: {{ block.settings[desc_string] | json | escape }},
+          primary_cta_text: {{ block.settings[primary_cta_text_string] | json | escape }},
+          primary_cta_aria: {{ block.settings[primary_cta_aria_string] | json | escape }},
+          primary_cta_link: {{ block.settings[primary_cta_link_string] | json | escape }},
+          secondary_cta_text: {{ block.settings[secondary_cta_text_string] | json | escape }},
+          secondary_cta_aria: {{ block.settings[secondary_cta_aria_string] | json | escape }},
+          secondary_cta_link: {{ block.settings[secondary_cta_link_string] | json | escape }},
+          banner_theme: {{ block.settings[banner_theme_string] | json | escape }},
+        }
+        {% unless forloop.last %},{% endunless %}
+      {% endif %}
+    {% endfor %}
+  ]
+{%- endcapture -%}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="hero-banner"
+  data-component-type="load"
+  data-section-id="{{ section.id }}"
+  data-section-type="hero-banner"
+
+>
+
+  <hero-banner
+    v-if="getComponentVisible('hero-banner')"
+    v-cloak
+    :liquid="{
+      sectionId: {{ section.id | json | escape }}
+    }"
+    :slides= "{{ slides }}"
+    :settings= "{{ section.settings | json | escape }}"
+  ></hero-banner>
+
+  <div v-if="!getComponentActive('hero-banner')">
+    <div id="HeroBanner"
+      class="
+        carousel
+        swiper-container
+        hero-banner
+        hero-banner__carousel
+        hero-banner__container
+      "
+      data-autoplay="{{ section.settings.carousel_autoplay }}"
+      data-single-slide="{{ section.settings.enable_one_slide }}"
+      js-carousel="container"
+      js-hero-banner="carousel">
+      <div
+        class="
+          is-loading critical-component-clear liquid
+          swiper-button-prev
+          swiper-button-custom
+          swiper-button-custom--{{ section.settings.banner_theme }}
+          {% if section.settings.enable_one_slide %}
+            is-hidden
+          {% endif %}
+        "
+        js-hero-banner="prev"
+      >
+        {% render 'icon-direction', icon: 'chevron', direction: 'left' %}
+      </div>
+
+      <ul class="swiper-wrapper">
+        {% for i in (1..4) %}
+          {% assign video_url_string = 'slide_#_video_url' | replace: '#', i %}
+          {% assign image_string = 'slide_#_image' | replace: '#', i %}
+          {% assign alignment_string = 'slide_#_alignment' | replace: '#', i %}
+          {% assign heading_string = 'slide_#_heading' | replace: '#', i %}
+          {% assign desc_string = 'slide_#_desc' | replace: '#', i %}
+          {% assign primary_cta_text_string = 'slide_#_primary_cta_text' | replace: '#', i %}
+          {% assign primary_cta_aria_string = 'slide_#_primary_cta_aria' | replace: '#', i %}
+          {% assign primary_cta_link_string = 'slide_#_primary_cta_link' | replace: '#', i %}
+          {% assign secondary_cta_text_string = 'slide_#_secondary_cta_text' | replace: '#', i %}
+          {% assign secondary_cta_link_string = 'slide_#_secondary_cta_link' | replace: '#', i %}
+          {% assign secondary_cta_aria_string = 'slide_#_secondary_cta_aria' | replace: '#', i %}
+          {% assign banner_theme_string = 'slide_#_banner_theme' | replace: '#', i %}
+
+          {% assign video_url = block.settings[video_url_string] %}
+          {% assign image = block.settings[image_string] %}
+          {% assign alignment = block.settings[alignment_string] %}
+          {% assign heading = block.settings[heading_string] %}
+          {% assign desc = block.settings[desc_string] %}
+          {% assign primary_cta_text = block.settings[primary_cta_text_string] %}
+          {% assign primary_cta_aria = block.settings[primary_cta_aria_string] %}
+          {% assign primary_cta_link = block.settings[primary_cta_link_string] %}
+          {% assign secondary_cta_text = block.settings[secondary_cta_text_string] %}
+          {% assign secondary_cta_aria = block.settings[secondary_cta_aria_string] %}
+          {% assign secondary_cta_link = block.settings[secondary_cta_link_string] %}
+          {% assign banner_theme = block.settings[banner_theme_string] %}
+
+          {% if image or video_url != blank %}
+            <li
+              class="
+                hero-banner__slide
+                lazyload
+                swiper-slide
+              "
+              js-carousel="cell"
+              js-hero-banner="slide"
+            >
+              {% if video_url == blank or video_url == '#' %}
+                <div
+                  class="hero-banner__image hero-banner__image--desktop lazyload"
+                  data-bgset="{% render 'responsive-bg-image', image: image %}"
+                ></div>
+
+                {% if mobile_image != blank %}
+                  <div
+                    class="hero-banner__image hero-banner__image--mobile lazyload"
+                    data-bgset="{% render 'responsive-bg-image', image: mobile_image %}"
+                  ></div>
+                {% else %}
+                  <div
+                    class="hero-banner__image hero-banner__image--mobile lazyload"
+                    data-bgset="{% render 'responsive-bg-image', image: image %}"
+                  ></div>
+                {% endif %}
+              {% else %}
+                <div class="hero-banner__player">
+                  <video
+                    class="hero-banner__video"
+                    autoplay="1"
+                    loop="1"
+                    muted="1"
+                    playsinline="1"
+                    poster="{{ image | img_url: '1920x' }}"
+                    preload="1"
+                    js-hero-banner="video"
+                  >
+                    <source src="{{ video_url }}" type="video/mp4">
+                  </video>
+                </div>
+              {% endif %}
+
+              <div
+                class="
+                  hero-banner__paragraph
+                  hero-banner__paragraph--{{ banner_theme }}
+                  {{ alignment }}
+                "
+                data-alignment="{{ alignment }}"
+              >
+                <div class="hero-banner__content">
+                  {% if heading != blank %}
+                    <h2 class="hero-banner__heading">{{ heading }}</h2>
+                  {% endif %}
+
+                  {% if desc != blank %}
+                    <p class="hero-banner__desc">{{ desc }}</p>
+                  {% endif %}
+
+                  <div class="hero-banner__cta-group {{ alignment }}">
+                    {% if primary_cta_link != blank and primary_cta_text != blank %}
+                      <a
+                        class="
+                          text-link
+                          text-link--{{ section.settings.banner_theme }}
+                          hero-banner__cta
+                          hero-banner__cta--primary
+                          hero-banner__cta--{{ banner_theme }}
+                        "
+                        aria-label="{{ primary_cta_aria | default: primary_cta_text }}"
+                        href="{{ primary_cta_link }}"
+                      >
+                        <span>{{ primary_cta_text }}</span>
+                        {% render 'icon-direction', icon: 'arrow', direction: 'up-right' %}
+                      </a>
+                    {% endif %}
+
+                    {% if secondary_cta_link != blank and secondary_cta_text != blank %}
+                      <a
+                        class="
+                          text-link
+                          text-link--{{ section.settings.banner_theme }}
+                          hero-banner__cta
+                          hero-banner__cta--secondary
+                          hero-banner__cta--{{ banner_theme }}
+                        "
+                        aria-label="{{ secondary_cta_aria | default: secondary_cta_text }}"
+                        href="{{ secondary_cta_link }}"
+                      >
+                        <span>{{ secondary_cta_text }}</span>
+                        {% render 'icon-direction', icon: 'arrow', direction: 'up-right' %}
+                      </a>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+
+      <div
+        class="
+          swiper-button-next
+          swiper-button-custom
+          swiper-button-custom--{{ section.settings.banner_theme }}
+          {% if section.settings.enable_one_slide %}
+            is-hidden
+          {% endif %}
+        "
+        js-hero-banner="next"
+      >
+        {% render 'icon-direction', icon: 'chevron', direction: 'right' %}
+      </div>
+
+      <div
+        class="
+          swiper-pagination
+          swiper-pagination--{{ section.settings.banner_theme }}
+          {{ alignment }}
+          {% if section.settings.enable_one_slide %}
+            is-hidden
+          {% endif %}
+        "
+        js-hero-banner="pagination"
+      ></div>
+    </div>
+  </div>
+</section>
+
+{%- comment -%}
+  {% raw %}
+    {% schema %}
+      {
+        "settings": [],
+        "templates": [
+          "pages",
+          "products",
+          "collections",
+          "blogs",
+          "articles"
+        ],
+        "block": {
+          "type": "hero-banner-block",
+          "name": "Hero Banner",
+          "settings": [
+            {
+              "type": "select",
+              "id": "banner_theme",
+              "label": "Hero banner theme",
+              "default": "light",
+              "options": [
+                {
+                  "label": "Dark",
+                  "value": "dark"
+                },
+                {
+                  "label": "Light",
+                  "value": "light"
+                }
+              ]
+            },
+            {
+              "type": "range",
+              "id": "carousel_autoplay",
+              "unit": "s",
+              "label": "Carousel Autoplay Duration",
+              "min": 3,
+              "max": 15,
+              "step": 1,
+              "default": 3
+            },
+            {
+              "type": "checkbox",
+              "id": "enable_one_slide",
+              "label": "Enable Single Slide",
+              "info": "Slide 1 content will be applied when it's enabled",
+              "default": false
+            },
+            {
+              "type": "header",
+              "content": "Slide 1",
+              "info": "Slide 1"
+            },
+            {
+              "type": "text",
+              "id": "slide_1_video_url",
+              "label": "Video URL",
+              "default": "#",
+              "info": "CDN to .mov or .mp4. Video will be autoplayed in the background on loop."
+            },
+            {
+              "type": "image_picker",
+              "id": "slide_1_image",
+              "label": "Hero image",
+              "info": "Recommended size: 1440x652."
+            },
+            {
+              "type": "header",
+              "content": "Text content"
+            },
+            {
+              "type": "select",
+              "id": "slide_1_alignment",
+              "label": "Text block alignment",
+              "default": "right",
+              "options": [
+                {
+                  "label": "Left",
+                  "value": "left"
+                },
+                {
+                  "label": "Right",
+                  "value": "right"
+                }
+              ]
+            },
+            {
+              "type": "select",
+              "id": "slide_1_banner_theme",
+              "label": "Slide 1 theme",
+              "default": "light",
+              "options": [
+                {
+                  "label": "Dark",
+                  "value": "dark"
+                },
+                {
+                  "label": "Light",
+                  "value": "light"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "slide_1_heading",
+              "label": "Slide 1 Heading Text",
+              "default": "We're all gamers"
+            },
+            {
+              "type": "text",
+              "id": "slide_1_desc",
+              "label": "Slide 1 Description",
+              "default": "Committed to making sure every gamer feels they are included. No matter who you are. or what you play!"
+            },
+            {
+              "type": "header",
+              "content": "CTA"
+            },
+            {
+              "type": "text",
+              "id": "slide_1_primary_cta_text",
+              "label": "Slide 1 Primary CTA label",
+              "default": "Shop PC"
+            },
+            {
+              "type": "url",
+              "id": "slide_1_primary_cta_link",
+              "label": "Slide 1 Primary CTA Link",
+              "default": "/"
+            },
+            {
+              "type": "text",
+              "id": "slide_1_secondary_cta_text",
+              "label": "Slide 1 Secondary CTA label",
+              "default": "Shop Console"
+            },
+            {
+              "type": "url",
+              "id": "slide_1_secondary_cta_link",
+              "label": "Slide 1 Seconday CTA Link",
+              "default": "/"
+            },
+            {
+              "type": "header",
+              "content": "Slide 2",
+              "info": "Slide 2"
+            },
+            {
+              "type": "text",
+              "id": "slide_2_video_url",
+              "label": "Video URL",
+              "default": "#",
+              "info": "Required: CDN to .mov or .mp4. Video will be autoplayed in the background on loop."
+            },
+            {
+              "type": "image_picker",
+              "id": "slide_2_image",
+              "label": "Hero image",
+              "info": "Recommended size: 1440x652."
+            },
+            {
+              "type": "header",
+              "content": "Text content"
+            },
+            {
+              "type": "select",
+              "id": "slide_2_alignment",
+              "label": "Text block alignment",
+              "default": "right",
+              "options": [
+                {
+                  "label": "Left",
+                  "value": "left"
+                },
+                {
+                  "label": "Right",
+                  "value": "right"
+                }
+              ]
+            },
+            {
+              "type": "select",
+              "id": "slide_2_banner_theme",
+              "label": "Slide 2 theme",
+              "default": "light",
+              "options": [
+                {
+                  "label": "Dark",
+                  "value": "dark"
+                },
+                {
+                  "label": "Light",
+                  "value": "light"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "slide_2_heading",
+              "label": "Slide 2 Heading Text",
+              "default": "We're all gamers"
+            },
+            {
+              "type": "text",
+              "id": "slide_2_desc",
+              "label": "Slide 2 Description",
+              "default": "Committed to making sure every gamer feels they are included. No matter who you are. or what you play!"
+            },
+            {
+              "type": "header",
+              "content": "CTA"
+            },
+            {
+              "type": "text",
+              "id": "slide_2_primary_cta_text",
+              "label": "Slide 2 Primary CTA label",
+              "default": "Shop PC"
+            },
+            {
+              "type": "url",
+              "id": "slide_2_primary_cta_link",
+              "label": "Slide 2 Primary CTA Link",
+              "default": "/"
+            },
+            {
+              "type": "text",
+              "id": "slide_2_secondary_cta_text",
+              "label": "Slide 2 Secondary CTA label",
+              "default": "Shop Console"
+            },
+            {
+              "type": "url",
+              "id": "slide_2_secondary_cta_link",
+              "label": "Slide 2 Seconday CTA Link",
+              "default": "/"
+            },
+            {
+              "type": "header",
+              "content": "Slide 3",
+              "info": "Slide 3"
+            },
+            {
+              "type": "text",
+              "id": "slide_3_video_url",
+              "label": "Video URL",
+              "default": "#",
+              "info": "Required: CDN to .mov or .mp4. Video will be autoplayed in the background on loop."
+            },
+            {
+              "type": "image_picker",
+              "id": "slide_3_image",
+              "label": "Hero image",
+              "info": "Recommended size: 1440x652."
+            },
+            {
+              "type": "header",
+              "content": "Text content"
+            },
+            {
+              "type": "select",
+              "id": "slide_3_alignment",
+              "label": "Text block alignment",
+              "default": "right",
+              "options": [
+                {
+                  "label": "Left",
+                  "value": "left"
+                },
+                {
+                  "label": "Right",
+                  "value": "right"
+                }
+              ]
+            },
+            {
+              "type": "select",
+              "id": "slide_3_banner_theme",
+              "label": "Slide 3 theme",
+              "default": "light",
+              "options": [
+                {
+                  "label": "Dark",
+                  "value": "dark"
+                },
+                {
+                  "label": "Light",
+                  "value": "light"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "slide_3_heading",
+              "label": "Slide 3 Heading Text",
+              "default": "We're all gamers"
+            },
+            {
+              "type": "text",
+              "id": "slide_3_desc",
+              "label": "Slide 3 Description",
+              "default": "Committed to making sure every gamer feels they are included. No matter who you are. or what you play!"
+            },
+            {
+              "type": "header",
+              "content": "CTA"
+            },
+            {
+              "type": "text",
+              "id": "slide_3_primary_cta_text",
+              "label": "Slide 3 Primary CTA label",
+              "default": "Shop PC"
+            },
+            {
+              "type": "url",
+              "id": "slide_3_primary_cta_link",
+              "label": "Slide 3 Primary CTA Link",
+              "default": "/"
+            },
+            {
+              "type": "text",
+              "id": "slide_3_secondary_cta_text",
+              "label": "Slide 3 Secondary CTA label",
+              "default": "Shop Console"
+            },
+            {
+              "type": "url",
+              "id": "slide_3_secondary_cta_link",
+              "label": "Slide 3 Seconday CTA Link",
+              "default": "/"
+            },
+            {
+              "type": "header",
+              "content": "Slide 4",
+              "info": "Slide 4"
+            },
+            {
+              "type": "text",
+              "id": "slide_4_video_url",
+              "label": "Video URL",
+              "default": "#",
+              "info": "Required: CDN to .mov or .mp4. Video will be autoplayed in the background on loop."
+            },
+            {
+              "type": "image_picker",
+              "id": "slide_4_image",
+              "label": "Hero image",
+              "info": "Recommended size: 1440x652."
+            },
+            {
+              "type": "header",
+              "content": "Text content"
+            },
+            {
+              "type": "select",
+              "id": "slide_4_alignment",
+              "label": "Text block alignment",
+              "default": "right",
+              "options": [
+                {
+                  "label": "Left",
+                  "value": "left"
+                },
+                {
+                  "label": "Right",
+                  "value": "right"
+                }
+              ]
+            },
+            {
+              "type": "select",
+              "id": "slide_4_banner_theme",
+              "label": "Slide 4 theme",
+              "default": "light",
+              "options": [
+                {
+                  "label": "Dark",
+                  "value": "dark"
+                },
+                {
+                  "label": "Light",
+                  "value": "light"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "slide_4_heading",
+              "label": "Slide 4 Heading Text",
+              "default": "We're all gamers"
+            },
+            {
+              "type": "text",
+              "id": "slide_4_desc",
+              "label": "Slide 4 Description",
+              "default": "Committed to making sure every gamer feels they are included. No matter who you are. or what you play!"
+            },
+            {
+              "type": "header",
+              "content": "CTA"
+            },
+            {
+              "type": "text",
+              "id": "slide_4_primary_cta_text",
+              "label": "Slide 4 Primary CTA label",
+              "default": "Shop PC"
+            },
+            {
+              "type": "url",
+              "id": "slide_4_primary_cta_link",
+              "label": "Slide 4 Primary CTA Link",
+              "default": "/"
+            },
+            {
+              "type": "text",
+              "id": "slide_4_secondary_cta_text",
+              "label": "Slide 4 Secondary CTA label",
+              "default": "Shop Console"
+            },
+            {
+              "type": "url",
+              "id": "slide_4_secondary_cta_link",
+              "label": "Slide 4 Seconday CTA Link",
+              "default": "/"
+            }
+          ]
+        }
+      }
+    {% endschema %}
+  {% endraw %}
+{%- endcomment -%}

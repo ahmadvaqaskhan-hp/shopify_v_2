@@ -1,0 +1,99 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Snippet: Product prices
+
+  @param {Number} [animation_delay] - Used to delay animation, useful for
+  loading placeholders.
+  @param {Boolean} available - If the product is available.
+  @param {String} [block_class] - Block level class to apply to all elements.
+  @param {String} [class] - Additional classes.
+  @param {Number|Boolean} compare_at_price - Compare at price if it exists.
+  @param {String} [element] - Custom element override.
+  @param {Number} price - Product price, in cents format.
+  @param {Boolean} [reverse] - Reverse order of prices.
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign on_sale = false
+  assign prices_class = 'product-prices '
+  assign prices_compare_class = 'product-prices__compare-at-price h6 '
+  assign prices_price_class = 'product-price__current h6 '
+  assign prices_sold_out_class = 'product-prices__sold-out '
+  assign enable_pricing_directive = settings.enable_pricing_directive
+
+  if compare_at_price != blank and price < compare_at_price
+    assign on_sale = true
+  endif
+
+  if block_class
+    assign prices_class = prices_class | append: '#__prices ' | replace: '#', block_class
+    assign prices_compare_class = prices_compare_class | append: '#__compare-at-price ' | replace: '#', block_class
+    assign prices_price_class = prices_price_class | append: '#__price ' | replace: '#', block_class
+    assign prices_sold_out_class = prices_sold_out_class | append: '#__sold-out ' | replace: '#', block_class
+  endif
+
+  if reverse
+    assign prices_class = prices_class | append: 'product-prices--reverse '
+  endif
+
+  if on_sale
+    assign prices_price_class = prices_price_class | append: 'product-prices__price--on-sale is-sale'
+  endif
+-%}
+
+{% comment %}
+-----------------------------------------------------------------------------
+  Capture templates.
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- capture compare_at_price_template -%}
+  {% if on_sale %}
+    <span class="{{ prices_compare_class | strip }}">
+      {{ compare_at_price | money }}
+    </span>
+  {% endif %}
+{%- endcapture -%}
+
+{%- capture price_template -%}
+  <span class="{{ prices_price_class | strip }}">
+    {% if price <= 0 %}
+      {{ 'product.prices.free' | t }}
+    {% else %}
+      {{ price | money }}
+    {% endif %}
+  </span>
+{%- endcapture -%}
+
+{%- capture vat_message -%}
+  {% if settings.include_vat_message %}
+    <p class="product-price__vat-message">
+      {{ 'product.form.vat_included' | t }}
+    </p>
+  {% endif %}
+{%- endcapture -%}
+
+{% comment %}
+-----------------------------------------------------------------------------
+  Output.
+-----------------------------------------------------------------------------
+{% endcomment %}
+<{{ element | default: 'p' }}
+  class="
+    {{ prices_class | strip }}
+    {{ class }}
+    liquid
+  "
+  style="animation-delay: {{ animation_delay | default: 0 }}s;"
+>
+  {% unless enable_pricing_directive %}
+    {% if reverse %}
+      {{ price_template }}
+      {{ compare_at_price_template }}
+    {% else %}
+      {{ compare_at_price_template }}
+      {{ price_template }}
+    {% endif %}
+  {% else %}
+    {{ price_template }}
+  {% endunless %}
+</{{ element | default: 'p' }}>

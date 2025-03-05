@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[1930],{3267:function(e,n,u){u.r(n),u.d(n,{default:function(){return a}});var a={name:"SideqikUgcGallery"}}}]);
+//# sourceMappingURL=component.sideqik-ugc-gallery.js.map?v=1733162424563

@@ -1,0 +1,134 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Full width banner (full-width-banner)
+  - Static section.
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.full-width-banner.css' | asset_url | stylesheet_tag }}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "full-width-banner", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+{%- liquid
+  assign video_url = section.settings.video_url
+  assign image = section.settings.image
+  assign mobile_image = section.settings.mobile_image
+  assign media_type = section.settings.media_type
+
+  if mobile_image == blank
+    assign mobile_image = image
+  endif
+-%}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="full-width-banner"
+  data-section-schema="{% if request.design_mode %}{'blocks': [{% for block in section.blocks %}{ 'type': {{ block.type | json | escape }}, 'settings': {{ block.settings | json | escape }} }{% unless forloop.last %},{% endunless %}{% endfor %}],'section': { 'id': {{ section.id | json | escape }}, 'type': 'full-width-banner', 'settings': {{ section.settings | json | escape }} }}{% endif %}"
+>
+  <div class="full-width-banner critical-component-clear liquid full-width-banner__container">
+    {% if media_type == 'video' and video_url != blank %}
+
+      {% comment %} Full Width Video {% endcomment %}
+      <div class="full-width-banner__player-wrapper">
+        <div class="full-width-banner__player">
+          <video
+            class="full-width-banner__video"
+            autoplay="1"
+            loop="1"
+            muted="1"
+            playsinline="1"
+            preload="1"
+          >
+            <source src="{{ video_url }}" type="video/mp4">
+          </video>
+        </div>
+      </div>
+
+    {% else %}
+      {% comment %} Desktop and mobile images {% endcomment %}
+      <div class="full-width-banner__image-wrapper">
+        {% render 'responsive-image' with
+          image: image,
+          max_width: 1440,
+          max_height: 656,
+          wrapper_class: 'full-width-banner__image--desktop',
+        %}
+        {% render 'responsive-image' with
+          image: mobile_image,
+          max_width: 720,
+          max_height: 530,
+          wrapper_class: 'full-width-banner__image--mobile',
+        %}
+      </div>
+
+    {% endif %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Full Width Banner",
+  "class": "index-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Media"
+    },
+    {
+      "type": "select",
+      "id": "media_type",
+      "label": "Media Type",
+      "options": [
+        {
+          "value": "image",
+          "label": "Image"
+        },
+        {
+          "value": "video",
+          "label": "Video"
+        }
+      ],
+      "default": "image"
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Desktop Image",
+      "info": "Recommended dimensions 2880px x 1312px."
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Mobile image",
+      "info": "Recommended dimensions 720px x 1060px."
+    },
+    {
+      "type": "header",
+      "content": "Video",
+      "info": "Video will be autoplayed in the background on loop."
+    },
+    {
+      "type": "text",
+      "id": "video_url",
+      "label": "Video URL",
+      "info": "Required: CDN to .mov or .mp4."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Full Width Banner",
+      "category": "Custom Content Block"
+    }
+  ]
+}
+{% endschema %}

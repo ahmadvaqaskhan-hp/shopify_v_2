@@ -1,0 +1,238 @@
+{% comment %}
+-----------------------------------------------------------------------------
+Snippet / Theme: Variables
+- Assign global variables for use in JavaScript.
+- Also removes `no-js` class from html
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign disable_async_components = settings.disable_async_components
+  assign disable_canvas = settings.disable_canvas
+  assign disable_component_ready_state = settings.disable_component_ready_state
+  assign disable_overlays_dismissed = settings.disable_overlays_dismissed
+  assign disable_vuex_persist = settings.disable_vuex_persist
+  assign state_waiting = 'waiting'
+  assign state_loading = 'loading'
+  assign state_active=  'active'
+
+  assign theme_name = theme.name | downcase
+
+  if theme_name contains 'production'
+    assign disable_async_components = false
+    assign disable_canvas = false
+    assign disable_component_ready_state = false
+    assign disable_overlays_dismissed = false
+    assign disable_vuex_persist = false
+  endif
+
+  if disable_async_components
+    assign state_active = 'waiting'
+    assign state_loading = 'waiting'
+  endif
+-%}
+
+{% comment %}
+-----------------------------------------------------------------------------
+Output to cnvs variable.
+-----------------------------------------------------------------------------
+{% endcomment %}<script>
+  window.cnvs = window.cnvs || {}
+  document.documentElement.className = document
+    .documentElement
+    .className
+    .replace('no-js', '')
+
+    window
+    .cnvs
+    .credentials = {
+    storefront: {
+      store: {{ shop.permanent_domain | remove: '.myshopify.com' | json }},
+      token: {{ settings.storefront_token | json }},
+      version: {{ settings.storefront_version | json }}
+    },
+    hyperx_stacklet: {
+      domain: {{ settings.hyperx_stacklet_domain | json }}
+    }
+  }
+
+  window.cnvs.customer = {
+    id: {{ customer.id | json }},
+    firstName: {{ customer.first_name | json }},
+    lastName: {{ customer.last_name | json }},
+    loggedIn: {% if customer %}true{% else %}false{% endif %},
+    phone: {{ customer.phone | json }},
+  }
+
+  window.cnvs.environment = {
+    bugsnagApiKey: 'BUGSNAG_API_KEY',
+    canvas: '3.4.0',
+    mode: 'production',
+    release: 'RELEASE_VERSION',
+  }
+
+  window.cnvs.page = {
+    handle: {{ handle | json }},
+    title: {{ page_title | json }},
+    type: {{ request.page_type | json }}
+  }
+
+  window.cnvs.request = {
+    designMode: {{ request.design_mode | json }},
+    host: {{ request.host | json }},
+    locale: {{ request.locale | json }},
+    origin: {{ request.origin | json }},
+    path: {{ request.path | json }},
+    pageType: {{ request.page_type | json }}
+  }
+
+  window.cnvs.routes = {
+    account: {
+      url: {{ routes.account_url | json }}
+    },
+    cart: {
+      add: {{ routes.cart_add_url | append: '.js' | json }},
+      change: {{ routes.cart_change_url | append: '.js' | json }},
+      clear: {{ routes.cart_clear_url | append: '.js' | json }},
+      js: {{ routes.cart_url | append: '.js' | json }},
+      update: {{ routes.cart_update_url | append: '.js' | json }},
+      url: {{ routes.cart_url | json }}
+    },
+    predictiveSearch: {{ routes.predictive_search_url | json }},
+    root: {{ routes.root_url | json }},
+    search: {{ routes.search_url | json }}
+  }
+
+  {% comment %}
+    Theme settings
+  {% endcomment %}
+  window.cnvs.settings = {
+    disableAsyncComponents: {{ disable_async_components | json }},
+    disableCanvas: {{ disable_canvas | json }},
+    disableComponentReadyState: {{ disable_component_ready_state | json }},
+    disableOverlaysDismissed: {{ disable_overlays_dismissed | json }},
+    disableVuexPersist: {{ disable_vuex_persist | json }},
+    klaviyoFormID: {{ settings.klaviyo_form_id | json }},
+    klaviyoListID: {{ settings.klaviyo_list_id | json }},
+    preOrderCheckout: {{ settings.pre_order_checkout | json }},
+    yotpoStarId: {{ settings.yotpo_star_id | json }},
+    quantityLimits: {
+      enable: {{ settings.enable_quantity_limit | json }},
+      storeLimit: {{ settings.quantity_limit_value | json }}
+    },
+    lowInventory: {
+      enable: {{ settings.enable_low_inventory | json }},
+      threshold: {{ settings.low_inventory_threshold | json }}
+    },
+    enableRedirectModal: {{ settings.enable_redirect_modal | json }},
+    showPostalCodeValidatorOnPdp: {{ settings.enable_postal_code_validator_on_pdp | json }},
+    showPostalCodeValidatorOnCheckout: {{ settings.enable_postal_code_validator_on_contact_info | json }},
+    pricingDirective: {
+      enable: {{ settings.enable_pricing_directive | json }},
+      strikeLowestPrice: {{ settings.strike_lowest_pricing | json }},
+      strikeRecommendedPrice: {{ settings.strike_recommended_price | json }},
+      includeVatText: {{ settings.include_vat_message | json }},
+    }
+  }
+
+  window.cnvs.socials = {
+    urls: {
+      {%- assign socials = 'discord,twitch,tiktok,instagram,youtube,vimeo' | split: ',' -%}
+      {%- for social in socials -%}
+        {%- assign social_setting = 'social_' | append: social | append: '_link' -%}
+        {%- unless settings[social_setting] == blank -%}
+          '{{ social }}' : '{{ settings[social_setting] }}'{%- unless forloop.last -%},{%- endunless -%}
+        {%- endunless -%}
+    {%- endfor -%}
+  }
+}
+
+window.cnvs.states = {
+  active: {{ state_active | json }},
+  loading: {{ state_loading | json }},
+  waiting: {{ state_waiting | json }}
+}
+
+window.cnvs.store = {
+  baseCurrency: {{ shop.currency | json }},
+  country: {{ localization.country.iso_code | json }},
+  countryName: {{ localization.country.name | json }},
+  currency: {{ localization.country.currency.iso_code | json }},
+  currencySymbol: {{ localization.country.currency.symbol | json }},
+  language: {{ localization.language.iso_code | json }},
+  localisedPermanentDomain: {{ shop.permanent_domain | append: localization.language.root_url | append: '/' | replace: '//', '/' | prepend: '//' | json }},
+  localisedShopDomain: {{ shop.domain | append: localization.language.root_url | append: '/' | replace: '//', '/' | prepend: '//' | json }},
+  localisedShopUrl: {{ shop.url | split: '//' | last | append: localization.language.root_url | append: '/' | replace: '//', '/' | prepend: '//' | json }},
+  moneyFormat: {{ shop.money_format | json }},
+  name: {{ settings.store_name | json }},
+  permanentDomain: {{ shop.permanent_domain | append: '/' | replace: '//', '/' | prepend: '//' | json }},
+  shopDomain: {{ shop.domain | append: '/' | replace: '//', '/' | prepend: '//' | json }},
+  shopName: {{ shop.name | json }},
+  shopUrl: {{ shop.url | split: '//' | last | append: '/' | replace: '//', '/' | prepend: '//' | json }},
+  storeCode: {{ settings.store_code | json }},
+  storeLang: {% for locale in shop.published_locales %}{% if shop.locale == locale.iso_code %}{{locale.iso_code | json }}{% break %}{% endif %}{% endfor %},
+}
+
+window.cnvs.urls = {
+  assets: {{ 'placeholder' | asset_url | replace: '?', '?v=' | json }},
+  files: {{ 'placeholder' | file_url | replace: '?', '?v=' | json }},
+  missingParameter: {{ 'placeholder' | asset_url | split: 'placeholder?' | last }}
+}
+
+window.cnvs.productCards = {
+  enableAltProductImageHover: {{ settings.enable_alt_product_image_hover | json }}
+}
+
+
+{% comment %} Shopify.theme cannot always be relied upon {% endcomment %}
+window.cnvs.theme = {
+  id: {{ theme.id | json }},
+  name: {{ theme.name | json }},
+  role: {{ theme.role | json }},
+}
+
+{% if checkout %}
+  window.cnvs.postalCodeValidator = {
+    isEnabled: {{ settings.checkout_postal_code_validator | json }}
+  };
+
+  window.cnvs.businessFields = {
+    isEnabled: {{ settings.checkout_business_fields | json }},
+    customerMaxChars: {{ settings.checkout_business_fields_customer_chars | json }},
+    abnMaxChars: {{ settings.checkout_business_fields_abn_chars | json }},
+    abnFieldName: {{ settings.checkout_business_fields_abn_field_name | json }}
+  };
+
+  window.cnvs.addressField = {
+    isEnabled: {{ settings.checkout_address_field | json }},
+    maxChars: {{ settings.checkout_address_field_max_chars | json }}
+  };
+
+  window.cnvs.nameFields = {
+    isEnabled: {{ settings.checkout_name_fields | json }},
+    maxChars: {{ settings.checkout_name_fields_max_chars | json }}
+  };{% endif %}
+
+  {% if collection %}
+    window.cnvs.collection = {
+      id: {{ collection.id | default: 'search' | json }},
+    }
+  {% else %}
+    window.cnvs.collection = {
+      id: 'default',
+    }
+  {% endif %}
+
+  {% if template == 'product' %}
+    {% assign current_variant = product.selected_or_first_available_variant %}
+    {% capture product_data %}
+      {% render 'main-product-data' with product: product %}
+    {% endcapture %}
+
+    {% capture variant_data %}
+      {% render 'main-product-variant-data' with variant: current_variant, product: product %}
+    {% endcapture %}
+
+    window.cnvs.product = {{ product_data | strip | strip_newlines  }};
+    window.cnvs.currentVariant = {{ variant_data | strip | strip_newlines }};
+  {% endif %}
+</script>

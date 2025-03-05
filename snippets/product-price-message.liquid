@@ -1,0 +1,33 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet: Product price message (product-price-message)
+------------------------------------------------------------------------------
+{% endcomment %}
+{% liquid
+  assign enable_pricing_directive = settings.enable_pricing_directive
+  assign recommended_price = product.metafields.global.recommended_price
+  assign lowest_price = product.metafields.global.lowest_price | remove: '_DELETE_'
+  assign recommended_price_message = 'product.form.recommended_price_html' | t: price: recommended_price
+  assign lowest_price_message = 'product.form.lowest_price_html' | t: price: lowest_price
+%}
+
+<div class="product-price-message is-loading liquid">
+  <div class="product-price-message">
+    {% if recommended_price %}
+      <div class="product-price-message__content body-2">
+        <span>
+          {{ recommended_price_message }}
+        </span>
+        {% render 'icon-misc' with icon:'tooltip' %}
+      </div>
+    {% endif %}
+    {% if lowest_price %}
+      <div class="product-price-message__content body-2">
+        <span>
+        {{ lowest_price_message }}
+        </span>
+        {% render 'icon-misc' with icon:'tooltip' %}
+      </div>
+    {% endif %}
+  </div>
+</div>

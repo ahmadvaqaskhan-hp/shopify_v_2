@@ -1,0 +1,225 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Video block (video-block)
+  - Static section.
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.video-block.css' | asset_url | stylesheet_tag }}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "video-block", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="video-block"
+>
+  <div class="video-block critical-component-clear liquid">
+    <div class="video-block__paragraph">
+      {% if block.settings.heading_text %}
+        <div class="h3 video-block__heading">{{ block.settings.heading_text }}</div>
+      {% endif %}
+
+      {% if block.settings.description %}
+        <div class="h6 video-block__description">{{ block.settings.description }}</div>
+      {% endif %}
+    </div>
+
+    {% assign block_size = 0 %}
+    {% for i in (1..4) %}
+      {% assign video_url_text = 'video_url_#' | replace: '#', i %}
+      {% unless block.settings[video_url_text] == blank %}
+        {% assign block_size = block_size | plus: 1 %}
+      {% endunless %}
+    {% endfor %}
+
+    <div class="video-block__video {% if block_size == 1 %}video-block__video--single{% endif %}">
+      {% for i in (1..4) %}
+        {% assign video_url_text = 'video_url_#' | replace: '#', i %}
+        {% assign video_desc_text = 'video_desc_#' | replace: '#', i %}
+
+        {% if block.settings[video_url_text] != blank %}
+          <div class="
+            video-block__player
+            {% if block_size == 1 and forloop.index == 1 %}
+              video-block__player--first
+            {% endif %}
+            {% if block_size == 3 and forloop.index == 3 %}
+              video-block__player--third
+            {% endif %}
+          ">
+            {% capture 'video_url' %}
+              {% if block.settings[video_url_text] contains 'youtube.com' %}
+                {{- block.settings[video_url_text] | split: 'watch?v=' | last | prepend: 'https://www.youtube.com/embed/' | strip -}}
+              {% else %}
+                {{- block.settings[video_url_text] -}}
+              {% endif %}
+            {% endcapture %}
+
+            {% capture 'video_id' %}
+              {{- block.id | preprend: 'vimeo-' | append: '-' | append: forloop.index -}}
+            {% endcapture %}
+
+            {% if block.settings[video_url_text].type == 'vimeo' %}
+              <div
+                id="{{ video_id }}"
+                class="video-block__vimeo"
+                data-video-id="{{ video_url }}"
+                data-video-title="{{ block.settings[video_url_text].type }} {{ forloop.index }}"
+                js-video="vimeo"
+              >
+              </div>
+            {% else %}
+              <iframe
+                frameBorder="0"
+                src="{{- video_url -}}"
+                width="100%"
+                height="100%"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                title="{{ block.settings[video_url_text].type }} {{ forloop.index }}"
+                webkitAllowFullScreen
+                mozallowfullscreen
+                allowFullScreen
+                js-video="{{ block.settings[video_url_text].type }}"
+              ></iframe>
+            {% endif %}
+
+            {% if block.settings[video_desc_text] %}
+              <div class="video-block__video-desc body-1">
+                {{ block.settings[video_desc_text] }}
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{%- comment -%}
+  {% raw %}
+    {% schema %}
+      {
+        "settings": [],
+        "templates": [
+          "pages",
+          "products",
+          "collections",
+          "blogs",
+          "articles"
+        ],
+        "block": {
+          "type": "videos-block",
+          "name": "Videos Block",
+          "settings": [
+            {
+              "type": "header",
+              "content": "Header"
+            },
+            {
+              "type": "text",
+              "id": "heading_text",
+              "label": "Heading text",
+              "default": "Video Section Title"
+            },
+            {
+              "type": "text",
+              "id": "description",
+              "label": "Description text",
+              "default": "Description"
+            },
+            {
+              "type": "header",
+              "content": "Video 1"
+            },
+            {
+              "type": "video_url",
+              "id": "video_url_1",
+              "accept": [
+                "youtube",
+                "vimeo"
+              ],
+              "label": "Video URL",
+              "default": "https:\/\/www.youtube.com\/watch?v=_9VUPq3SxOc",
+              "info": "Supports Youtube and Vimeo"
+            },
+            {
+              "type": "text",
+              "id": "video_desc_1",
+              "label": "Video description",
+              "default": "Video description"
+            },
+            {
+              "type": "header",
+              "content": "Video 2"
+            },
+            {
+              "type": "video_url",
+              "id": "video_url_2",
+              "accept": [
+                "youtube",
+                "vimeo"
+              ],
+              "label": "Video URL",
+              "default": "https:\/\/www.youtube.com\/watch?v=_9VUPq3SxOc",
+              "info": "Supports Youtube and Vimeo"
+            },
+            {
+              "type": "text",
+              "id": "video_desc_2",
+              "label": "Video description",
+              "default": "Video description"
+            },
+            {
+              "type": "header",
+              "content": "Video 3"
+            },
+            {
+              "type": "video_url",
+              "id": "video_url_3",
+              "accept": [
+                "youtube",
+                "vimeo"
+              ],
+              "label": "Video URL",
+              "default": "https:\/\/www.youtube.com\/watch?v=_9VUPq3SxOc",
+              "info": "Supports Youtube and Vimeo"
+            },
+            {
+              "type": "text",
+              "id": "video_desc_3",
+              "label": "Video description",
+              "default": "Video description"
+            },
+            {
+              "type": "header",
+              "content": "Video 4"
+            },
+            {
+              "type": "video_url",
+              "id": "video_url_4",
+              "accept": [
+                "youtube",
+                "vimeo"
+              ],
+              "label": "Video URL",
+              "default": "https:\/\/www.youtube.com\/watch?v=_9VUPq3SxOc",
+              "info": "Supports Youtube and Vimeo"
+            },
+            {
+              "type": "text",
+              "id": "video_desc_4",
+              "label": "Video description",
+              "default": "Video description"
+            }
+          ]
+        }
+      }
+    {% endschema %}
+  {% endraw %}
+{%- endcomment -%}

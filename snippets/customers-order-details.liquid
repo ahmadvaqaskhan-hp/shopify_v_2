@@ -1,0 +1,147 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Snippet / Customers: Customers order details
+  - Order details template.
+  - Used on account overview and orders templates.
+
+  @param {Boolean} full - Display full details, for orders template.
+  @param {Object} order - Order Liquid object to render.
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign view_order_string = 'customers.order_labels.view_order' | t
+-%}
+
+{% comment %}
+-----------------------------------------------------------------------------
+  Capture details.
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- capture amount_details -%}
+  <div class="order-details">
+    <p class="order-details__label text-body-label">
+      {{ 'customers.order_labels.amount' | t }}
+    </p>
+
+    <p
+      class="order-details__field text-body-m"
+      data-label="{{ 'customers.order_labels.amount' | t }}"
+    >
+      {{ order.total_price | money }}
+    </p>
+  </div>
+{%- endcapture -%}
+
+{%- capture date_details -%}
+  <div
+    class="
+      order-details
+      {% if full %}
+        order-details--span-two
+      {% endif %}
+    "
+  >
+    <p class="order-details__label text-body-label">
+      {{ 'customers.order_labels.date' | t }}
+    </p>
+
+    <p
+      class="order-details__field text-body-m"
+      data-label="{{ 'customers.order_labels.date' | t }}"
+    >
+      {{ order.created_at | date: format: 'day_full_month_year' }}
+    </p>
+  </div>
+{%- endcapture -%}
+
+{%- capture delivery_details -%}
+  <div class="order-details">
+    <p class="order-details__label text-body-label">
+      {{ 'customers.order_labels.delivery_status' | t }}
+    </p>
+
+    <p
+      class="order-details__field text-body-m"
+      data-label="{{ 'customers.order_labels.delivery_status' | t }}"
+    >
+      {{ order.fulfillment_status_label }}
+    </p>
+  </div>
+{%- endcapture -%}
+
+{%- capture order_details -%}
+  <div class="order-details">
+    <p class="order-details__label text-body-label">
+      {{ 'customers.order_labels.order_number' | t }}
+    </p>
+
+    <p
+      class="order-details__field text-body-m"
+      data-label="{{ 'customers.order_labels.order_number' | t }}"
+    >
+      <a href="{{ order.customer_url }}">
+        <span class="visually-hidden">
+          {{ 'customers.order_labels.view_order' | t }}
+        </span>
+
+        {{ order.name }}
+      </a>
+    </p>
+  </div>
+{%- endcapture -%}
+
+{%- capture payment_details -%}
+  <div class="order-details">
+    <p class="order-details__label text-body-label">
+      {{ 'customers.order_labels.payment_status' | t }}
+    </p>
+
+    <p
+      class="order-details__field text-body-m"
+      data-label="{{ 'customers.order_labels.payment_status' | t }}"
+    >
+      {{ order.financial_status_label }}
+    </p>
+  </div>
+{%- endcapture -%}
+
+{% comment %}
+-----------------------------------------------------------------------------
+  Output with order based on `full` prop.
+-----------------------------------------------------------------------------
+{% endcomment %}
+<div class="panel__grid">
+  {% if full %}
+    {{ order_details }}
+    {{ date_details }}
+    {{ amount_details }}
+    {{ payment_details }}
+    {{ delivery_details }}
+
+    {% render 'btn'
+      block_class: 'customers-orders',
+      class: 'customers-orders__view-order text-body-m',
+      label: view_order_string,
+      modifiers: 'text',
+      show_icon: false,
+      url: order.customer_url,
+    %}
+
+  {% else %}
+    {{ order_details }}
+    {{ delivery_details }}
+    {{ date_details }}
+    {{ amount_details }}
+  {% endif %}
+</div>
+
+{% if full %}
+  <div class="customers-orders__mobile panel__footer">
+    {% render 'btn'
+      block_class: 'customers-orders',
+      label: view_order_string,
+      modifiers: 'text',
+      url: order.customer_url,
+    %}
+  </div>
+{% endif %}

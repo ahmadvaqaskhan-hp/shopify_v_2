@@ -1,0 +1,342 @@
+{% comment %}
+----------------------------------------------------------------------------
+  Snippet: Address fields
+  - Used to output all address fields in the addresses template.
+
+  @param {Object} form - Liquid form tag.
+  @param {String} form_id - Form ID.
+----------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign form_errors = ''
+
+  unless form_id == 'new'
+    assign edit_address = true
+  endunless
+
+  for error in form.errors
+    capture form_errors
+      echo form_errors
+      echo '<p class="customers__error body-2">'
+        render 'icon-misc' with icon: 'error'
+        echo '<span>'
+          unless error == 'form'
+            echo form.errors.translated_fields[error] | capitalize | append: ' '
+          endunless
+            echo form.errors.messages[error] | append: ' '
+        echo '</span>'
+      echo '</p>'
+    endcapture
+  endfor
+-%}
+
+{% if form_errors != '' %}
+  <div
+    id="address-errors-{{ form_id }}"
+    class="customers__error-container"
+    data-form-id="{{ form_id }}"
+    js-addresses="error"
+  >
+    {{ form_errors }}
+  </div>
+{% endif %}
+
+<div class="form-group">
+  <label
+    class="form-group__label"
+    for="first-name-{{ form_id }}"
+  >
+    {{ 'customers.fields.first_name.label' | t }}
+  </label>
+
+  <input
+    id="first-name-{{ form_id }}"
+    {% if form.errors contains 'first_name' %}
+      class="input-error"
+    {% endif %}
+    autocapitalize="words"
+    autocomplete="given-name"
+    autocorrect="off"
+    placeholder="{{ 'customers.fields.first_name.placeholder' | t }}"
+    name="address[first_name]"
+    type="text"
+    {% if edit_address %}
+      value="{{ form.first_name }}"
+    {% endif %}
+    {% if form.errors contains 'first_name' %}
+      aria-describedby="address-errors-{{ form_id }}"
+      aria-invalid="true"
+    {% endif %}
+  >
+</div>
+
+<div class="form-group">
+  <label
+    class="form-group__label"
+    for="last-name-{{ form_id }}"
+  >
+    {{ 'customers.fields.last_name.label' | t }}
+  </label>
+
+  <input
+    id="last-name-{{ form_id }}"
+    {% if form.errors contains 'last_name' %}
+      class="input-error"
+    {% endif %}
+    autocapitalize="words"
+    autocomplete="family-name"
+    autocorrect="off"
+    name="address[last_name]"
+    placeholder="{{ 'customers.fields.last_name.placeholder' | t }}"
+    type="text"
+    {% if edit_address %}
+      value="{{ form.last_name }}"
+    {% endif %}
+    {% if form.errors contains 'last_name' %}
+      aria-describedby="address-errors-{{ form_id }}"
+      aria-invalid="true"
+    {% endif %}
+  >
+</div>
+
+<div class="form-group">
+  <label
+    class="form-group__label"
+    for="company-{{ form_id }}"
+  >
+    {{ 'customers.fields.company.label' | t }}
+  </label>
+
+  <input
+    id="company-{{ form_id }}"
+    {% if form.errors contains 'company' %}
+      class="input-error"
+    {% endif %}
+    autocomplete="organization"
+    autocorrect="off"
+    name="address[company]"
+    placeholder="{{ 'customers.fields.company.placeholder' | t }}"
+    type="text"
+    {% if edit_address %}
+      value="{{ form.company }}"
+    {% endif %}
+    {% if form.errors contains 'company' %}
+      aria-describedby="address-errors-{{ form_id }}"
+      aria-invalid="true"
+    {% endif %}
+  >
+</div>
+
+<div class="form-group">
+  <label
+    class="form-group__label"
+    for="address-1-{{ form_id }}"
+  >
+    {{ 'customers.fields.address1.label' | t }}
+  </label>
+
+  <input
+    id="address-1-{{ form_id }}"
+    {% if form.errors contains 'address1' %}
+      class="input-error"
+    {% endif %}
+    autocapitalize="words"
+    autocomplete="address-line1"
+    name="address[address1]"
+    placeholder="{{ 'customers.fields.address1.placeholder' | t }}"
+    type="text"
+    {% if edit_address %}
+      value="{{ form.address1 }}"
+    {% endif %}
+    {% if form.errors contains 'address1' %}
+      aria-describedby="address-errors-{{ form_id }}"
+      aria-invalid="true"
+    {% endif %}
+  >
+</div>
+
+<div class="form-group">
+  <label
+    class="form-group__label"
+    for="address-2-{{ form_id }}"
+  >
+    {{ 'customers.fields.address2.label' | t }}
+  </label>
+
+  <input
+    id="address-2-{{ form_id }}"
+    {% if form.errors contains 'address2' %}
+      class="input-error"
+    {% endif %}
+    autocapitalize="words"
+    autocomplete="address-line2"
+    name="address[address2]"
+    placeholder="{{ 'customers.fields.address2.placeholder' | t }}"
+    type="text"
+    {% if edit_address %}
+      value="{{ form.address2 }}"
+    {% endif %}
+    {% if form.errors contains 'address2' %}
+      aria-describedby="address-errors-{{ form_id }}"
+      aria-invalid="true"
+    {% endif %}
+  >
+</div>
+
+<div class="form-group">
+  <label
+    class="form-group__label"
+    for="city-{{ form_id }}"
+  >
+    {{ 'customers.fields.city.label' | t }}
+  </label>
+
+  <input
+    id="city-{{ form_id }}"
+    {% if form.errors contains 'city' %}
+      class="input-error"
+    {% endif %}
+    autocapitalize="words"
+    autocomplete="address-line3"
+    name="address[city]"
+    placeholder="{{ 'customers.fields.city.placeholder' | t }}"
+    type="text"
+    {% if edit_address %}
+      value="{{ form.city }}"
+    {% endif %}
+    {% if form.errors contains 'city' %}
+      aria-describedby="address-errors-{{ form_id }}"
+      aria-invalid="true"
+    {% endif %}
+  >
+</div>
+
+<div class="form-group">
+  <label
+    class="form-group__label"
+    for="country-{{ form_id }}"
+  >
+    {{ 'customers.fields.country.label' | t }}
+
+    <abbr
+      title="{{ 'customers.fields.required.label' | t }}"
+      aria-label="{{ 'customers.fields.required.label' | t }}"
+    >
+      {{ 'customers.fields.required.symbol' | t }}
+    </abbr>
+  </label>
+
+  <select
+    id="country-{{ form_id }}"
+    {% if form.errors contains 'country' %}
+      class="input-error"
+    {% endif %}
+    autocomplete="country-name"
+    name="address[country]"
+    required
+    {% if form.errors contains 'email' %}
+      aria-describedby="address-errors-{{ form.id }}"
+      aria-invalid="true"
+    {% endif %}
+    data-default="{{ form.country }}"
+    data-form-id="{{ form_id }}"
+    js-addresses="country"
+  >
+    {{ country_option_tags }}
+  </select>
+</div>
+
+<div
+  class="form-group is-hidden"
+  js-addresses="provinceContainer"
+>
+  <label
+    class="form-group__label"
+    for="province-{{ form_id }}"
+  >
+    {{ 'customers.fields.province.label' | t }}
+  </label>
+
+  <select
+    id="province-{{ form_id }}"
+    {% if form.errors contains 'province' %}
+      class="input-error"
+    {% endif %}
+    name="address[province]"
+    {% if form.errors contains 'province' %}
+      aria-describedby="address-errors-{{ form_id }}"
+      aria-invalid="true"
+    {% endif %}
+    data-default="{{ form.province }}"
+    js-addresses="province"
+  ></select>
+</div>
+
+<div class="form-group">
+  <label
+    class="form-group__label"
+    for="zip-{{ form_id }}"
+  >
+    {{ 'customers.fields.zip.label' | t }}
+  </label>
+
+  <input
+    id="zip-{{ form_id }}"
+    {% if form.errors contains 'zip' %}
+      class="input-error"
+    {% endif %}
+    autocapitalize="characters"
+    autocomplete="postal-code"
+    name="address[zip]"
+    placeholder="{{ 'customers.fields.zip.placeholder' | t }}"
+    type="text"
+    {% if edit_address %}
+      value="{{ form.zip }}"
+    {% endif %}
+    {% if form.errors contains 'zip' %}
+      aria-describedby="address-errors-{{ form_id }}"
+      aria-invalid="true"
+    {% endif %}
+  >
+</div>
+
+<div class="form-group">
+  <label
+    class="form-group__label"
+    for="phone-{{ form_id }}"
+  >
+    {{ 'customers.fields.phone.label' | t }}
+  </label>
+
+  <input
+    id="phone-{{ form_id }}"
+    {% if form.errors contains 'phone' %}
+      class="input-error"
+    {% endif %}
+    autocomplete="tel"
+    name="address[phone]"
+    pattern="[0-9\-]*"
+    placeholder="{{ 'customers.fields.phone.placeholder' | t }}"
+    type="tel"
+    {% if edit_address %}
+      value="{{ form.phone }}"
+    {% endif %}
+    {% if form.errors contains 'phone' %}
+      aria-describedby="address-errors-{{ form_id }}"
+      aria-invalid="true"
+    {% endif %}
+  >
+</div>
+
+<div class="form-group">
+  <div class="checkbox">
+    {{ form.set_as_default_checkbox | replace: '>', ' js-addresses="checkbox">' }}
+
+    <label
+      class="checkbox__label"
+      for="address_default_address_{{ form_id }}"
+    >
+      {{ 'customers.addresses.set_as_default_long' | t }}
+    </label>
+  </div>
+</div>

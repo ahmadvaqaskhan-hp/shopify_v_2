@@ -1,0 +1,26 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet / Customers: Customers address
+  - Snippet to format an address object to match the designs.
+  - Uses replace to add a line break before the zipcode if one is set.
+
+  @param {Object} address - Address to be formatted.
+------------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  if address.zip == ''
+    capture address_block
+      echo address | format_address
+    endcapture
+
+  else
+    assign zip_with_leading_space = ' ' | append: address.zip
+    assign zip_with_leading_line_break = '<br>' | append: address.zip
+
+    capture address_block
+      echo address | format_address | replace: zip_with_leading_space, zip_with_leading_line_break
+    endcapture
+  endif
+
+  echo address_block | replace: '<p', '<p class="text-body-m"'
+-%}

@@ -1,0 +1,322 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Title with description (title-with-description)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.title-with-description.css' | asset_url | stylesheet_tag }}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "title-with-description", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+{%- capture full_description -%}
+  {% unless section.settings.description_col_1 == blank %}
+    {{ section.settings.description_col_1 }}
+  {% endunless %}
+
+  {% unless section.settings.description_col_2 == blank %}
+    {{ section.settings.description_col_2 }}
+  {% endunless %}
+{%- endcapture -%}
+
+{%- capture modifiers -%}
+  {% if
+    section.settings.description_col_1 != blank and
+    section.settings.description_col_2 != blank
+  %}
+    title-with-description__description--2-col
+  {% endif %}
+{%- endcapture -%}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  class="title-with-description"
+  data-component-handle="title-with-description"
+  data-component-type="scroll"
+  data-section-schema="{% if request.design_mode %}{'blocks': [{% for block in section.blocks %}{ 'type': {{ block.type | json | escape }}, 'settings': {{ block.settings | json | escape }} }{% unless forloop.last %},{% endunless %}{% endfor %}],'section': { 'id': {{ section.id | json | escape }}, 'type': 'title-with-description', 'settings': {{ section.settings | json | escape }} }}{% endif %}"
+>
+  <title-with-description
+    v-if="getComponentVisible('title-with-description')"
+    v-cloak
+    :section="{
+      settings: {
+        alignment: {{ section.settings.alignment | json | escape }},
+        description_col_1: {{ section.settings.description_col_1 | json | escape }},
+        description_col_2: {{ section.settings.description_col_2 | json | escape }},
+        truncate: {{ section.settings.truncate | json | escape }},
+        cta_text_1: {{ section.settings.cta_text_1 | json | escape }},
+        cta_style_1: {{ section.settings.cta_style_1 | json | escape }},
+        cta_link_1: {{ section.settings.cta_link_1 | json | escape }},
+        cta_text_2: {{ section.settings.cta_text_2 | json | escape }},
+        cta_style_2: {{ section.settings.cta_style_2 | json | escape }},
+        cta_link_2: {{ section.settings.cta_link_2 | json | escape }},
+        footnote: {{ section.settings.footnote | json | escape }},
+        title: {{ section.settings.title | json | escape }},
+        truncate_min: {{ section.settings.truncate_min }},
+      },
+      trunc_desc: {{ full_description | truncate: section.settings.truncate_at, '...' | json | escape }},
+      full_desc: {{ full_description | json | escape }},
+      full_desc_size: {{ full_description.size }},
+    }"
+    :modifiers="{{ modifiers | json | escape }}"
+  ></title-with-description>
+
+  {% comment %}
+  -----------------------------------------------------------------------------
+    Loading state.
+  -----------------------------------------------------------------------------
+  {% endcomment %}
+  <div v-if="!getComponentActive('title-with-description')">
+    <div class="container">
+      <div class="title-with-description__wrapper">
+        <div class="title-with-description__content {{ section.settings.alignment }}">
+          {% if section.settings.title != blank %}
+            <h3 class="title-with-description__title h3">
+              {{ section.settings.title }}
+            </h3>
+          {% endif %}
+
+          {% unless
+            section.settings.description_col_1 == blank and
+            section.settings.description_col_2 == blank
+          %}
+
+            <div
+              class="title-with-description__description h6 mobile is-collapsed"
+            >
+              {% if
+                section.settings.truncate and
+                full_description.size >= section.settings.truncate_min
+              %}
+
+                <div class="title-with-description__short">
+                  {{ full_description | truncate: section.settings.truncate_at, '...' }}
+                </div>
+
+                <div class="title-with-description__full">
+                  {{ full_description }}
+                </div>
+
+                <button
+                  class="title-with-description__expand"
+                >
+                  {{ 'layout.general.read_more' | t }}
+                </button>
+              {% else %}
+                {{ full_description }}
+              {% endif %}
+            </div>
+
+            <div class="title-with-description__description h6 desktop {{ modifiers }}">
+              {% unless section.settings.description_col_1 == blank %}
+                <div class="title-with-description__col">
+                  {{ section.settings.description_col_1 }}
+                </div>
+              {% endunless %}
+
+              {% unless section.settings.description_col_2 == blank %}
+                <div class="title-with-description__col">
+                  {{ section.settings.description_col_2 }}
+                </div>
+              {% endunless %}
+            </div>
+          {% endunless %}
+
+          <div class="title-with-description__links-wrapper">
+            {% if section.settings.cta_text_1 != empty %}
+              <div class="title-with-description__link">
+                <a
+                  class="{{ section.settings.cta_style_1 }}"
+                  href="{{ section.settings.cta_link_1 }}"
+                >
+                  <span>{{ section.settings.cta_text_1 }}</span>
+                  {% render 'icon-direction', icon: 'arrow-up-right' %}
+                </a>
+              </div>
+            {% endif %}
+
+            {% if section.settings.cta_text_2 != empty %}
+              <div class="title-with-description__link">
+                <a
+                  class="{{ section.settings.cta_style_2 }}"
+                  href="{{ section.settings.cta_link_2 }}"
+                >
+                  <span>{{ section.settings.cta_text_2 }}</span>
+                  {% render 'icon-direction', icon: 'arrow-up-right' %}
+                </a>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="title-with-description__note">
+            {{ section.settings.footnote }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+{% schema %}
+{
+  "name": "Title with Description",
+  "class": "index-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Title with Description"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alignment",
+      "default": "text-center",
+      "options": [
+        {
+          "label": "Left",
+          "value": "text-left"
+        },
+        {
+          "label": "Center",
+          "value": "text-center"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title"
+    },
+    {
+      "type": "richtext",
+      "id": "description_col_1",
+      "label": "Description (Column 1)"
+    },
+    {
+      "type": "richtext",
+      "id": "description_col_2",
+      "label": "Description (Column 2)"
+    },
+    {
+      "type": "header",
+      "content": "Truncation"
+    },
+    {
+      "type": "checkbox",
+      "id": "truncate",
+      "label": "Truncate mobile text",
+      "info": "Adds read more/less to mobile description",
+      "default": true
+    },
+    {
+      "type": "number",
+      "id": "truncate_min",
+      "label": "Truncate minimum",
+      "info": "The minimum number of characters that must exist before truncating occurs. Default: 700",
+      "default": 700
+    },
+    {
+      "type": "number",
+      "id": "truncate_at",
+      "label": "Truncate at",
+      "info": "The number of characters to display in the shortened description before truncating occurs. Default: 500",
+      "default": 500
+    },
+    {
+      "type": "header",
+      "content": "CTA 1"
+    },
+    {
+      "type": "text",
+      "id": "cta_text_1",
+      "label": "Text"
+    },
+    {
+      "type": "url",
+      "id": "cta_link_1",
+      "label": "Link"
+    },
+    {
+      "type": "select",
+      "id": "cta_style_1",
+      "label": "Style",
+      "default": "button button--primary",
+      "options": [
+        {
+          "label": "Button Primary",
+          "value": "button button--primary"
+        },
+        {
+          "label": "Button Secondary",
+          "value": "button button--secondary"
+        },
+        {
+          "label": "Text Link",
+          "value": "text-link"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "CTA 2"
+    },
+    {
+      "type": "text",
+      "id": "cta_text_2",
+      "label": "Text"
+    },
+    {
+      "type": "url",
+      "id": "cta_link_2",
+      "label": "Link"
+    },
+    {
+      "type": "select",
+      "id": "cta_style_2",
+      "label": "Style",
+      "default": "button button--primary",
+      "options": [
+        {
+          "label": "Button Primary",
+          "value": "button button--primary"
+        },
+        {
+          "label": "Button Secondary",
+          "value": "button button--secondary"
+        },
+        {
+          "label": "Text Link",
+          "value": "text-link"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Additional"
+    },
+    {
+      "type": "richtext",
+      "id": "footnote",
+      "label": "Footnote"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Title with Description",
+      "category": "Custom Content Block"
+    }
+  ]
+}
+{% endschema %}

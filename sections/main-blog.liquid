@@ -1,0 +1,109 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Main blog (main-blog)
+  - Static section.
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.main-blog.css' | asset_url | stylesheet_tag }}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "main-blog", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+<section
+  class="component-section"
+  aria-labelledby="section-title-{{ section.id }}"
+  data-section-schema="{% if request.design_mode %}{'blocks': [{% for block in section.blocks %}{ 'type': {{ block.type | json | escape }}, 'settings': {{ block.settings | json | escape }} }{% unless forloop.last %},{% endunless %}{% endfor %}],'section': { 'id': {{ section.id | json | escape }}, 'type': 'main-blog', 'settings': {{ section.settings | json | escape }} }}{% endif %}"
+>
+  <div class="main-blog">
+
+    {% paginate blog.articles by 24 %}
+      {% assign blog_title = blog.title %}
+      {% assign hero_description = 'blogs.general.hero_description' | t %}
+      {% assign related_article_tag_size = 0 %}
+
+      {% if current_tags %}
+        {% capture blog_title %}
+          {{ blog.title | link_to: blog.url }} &mdash; {{ current_tags.first }}
+        {% endcapture %}
+      {% endif %}
+
+      <div class="template-blog__hero hero">
+        <div class="container">
+          <div class="row">
+            <div class="col xs12">
+              <div class="hero__content">
+                <h1 class="d3 hero__title">{{ blog_title }}</h1>
+
+                {% if hero_description %}
+                  <h2 class="h4 hero__title">
+                    {{ hero_description }}
+                  </h2>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% comment %}
+      ------------------------------------------------------------------------------
+        Article previews
+      ------------------------------------------------------------------------------
+      {% endcomment %}
+      <div class="container">
+        <div class="row">
+          <div class="col xs12">
+            <ul class="template-blog__categories">
+              {% for tag in blog.all_tags %}
+                {% unless tag contains 'related_articles: ' %}
+                  {% if current_tags contains tag %}
+                    <li class="template-blog__category-item">{{ tag }}</li>
+
+                  {% else %}
+                    {% if tag contains 'related-articles' %}
+                      {% assign related_article_tag_size = related_article_tag_size | plus: 1 %}
+
+                    {% else %}
+                      <li class="template-blog__category-item">
+                        {{ tag | link_to_tag: tag }}
+                      </li>
+                    {% endif %}
+                  {% endif %}
+                {% endunless %}
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col xs12">
+            <h3>{{ 'blogs.general.subheading' | t }}</h3>
+
+            <div class="template-blog__card-grid">
+              {% render 'article-card' for blog.articles as article %}
+            </div>
+          </div>
+        </div>
+
+        {% if paginate.pages > 1 %}
+          <div class="row">
+            {% render 'pagination' with paginate: paginate %}
+          </div>
+        {% endif %}
+      </div>
+    {% endpaginate %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Blog",
+  "settings": []
+}
+{% endschema %}

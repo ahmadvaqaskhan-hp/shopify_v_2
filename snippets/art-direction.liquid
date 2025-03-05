@@ -1,0 +1,208 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Snippet: Art direction
+  - Liquid version of art direction component.
+
+  @param {String} [alt] - Override image alt.
+  @param {Number} [animation_delay] - Used to delay animation, useful for
+  loading placeholders.
+  @param {String} [block_class] - Block level class to apply to all elements.
+  @param {String} [breakpoint_sizes] - Sizes to use at each breakpoint.
+  @param {String} [class] - Additional classes.
+  @param {Boolean} [lazyload] - Lazyload image, defaults to true.
+  @param {Object} image - Image object formatted from Shopify response.
+  @param {Object} [image_desktop] - Override image object for desktop.
+  @param {Boolean} [padding] - Add padding based on image ratio or supplied
+  ratio, default to true, disable to make image fill its parent container.
+  @param {String} [ratio] - Aspect ratio of image in `width:height` format or
+  in decimal ratio format (width/height), will use original ratio of image if
+  not set.
+  @param {String} [ratio_desktop] - Override image ratio for desktop.
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign breakpoints = 'xs-320,s-576,m-768,l-1024,xl-1230,xxl-1440' | split: ','
+  assign breakpoint_sizes = breakpoint_sizes | split: '-'
+  assign image_alt = image.alt
+  assign images_class = 'images '
+  assign images_image_class = 'images__image '
+  assign images_picture_class = 'images__picture '
+  assign images_spacer_class = 'images__spacer '
+
+  if block_class
+    assign images_class = images_class | append: '#__image-container ' | replace: '#', block_class
+    assign images_image_class = images_image_class | append: '#__image ' | replace: '#', block_class
+    assign images_picture_class = images_picture_class | append: '#__picture ' | replace: '#', block_class
+    assign images_spacer_class = images_spacer_class | append: '#__spacer ' | replace: '#', block_class
+  endif
+
+  if padding == false
+    assign images_class = images_class | append: 'images--no-padding '
+  endif
+
+  if ratio_desktop
+    assign images_spacer_class = images_spacer_class | append: 'images__spacer--breakpoint '
+  endif
+
+  if lazyload != false
+    assign images_image_class = images_image_class | append: 'lazyload '
+  else
+    assign images_image_class = images_image_class | append: 'eagerload '
+  endif
+
+  if alt != blank
+    assign image_alt = alt
+  endif
+
+  assign images_image_class = images_image_class | strip
+  assign img_tag_class = '<img class="' | append: images_image_class | append:'" '
+-%}
+
+{% comment %}
+-----------------------------------------------------------------------------
+  Aspect ratio.
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign height = image.height
+  assign width = image.width | divided_by: 100.00
+
+  if ratio
+    assign height = ratio | split: ':' | last | times: 100.00
+    assign width = ratio | split: ':' | first
+  endif
+
+  assign aspect_ratio = height | divided_by: width
+
+  if ratio == false and image.aspect_ratio
+    assign aspect_ratio = 1 | divided_by: image.aspect_ratio | times: 100.00
+  endif
+
+  unless ratio == false or ratio contains ':'
+    assign aspect_ratio = 1 | divided_by: ratio | times: 100.00
+  endunless
+
+  if ratio_desktop
+    assign image_object = image
+
+    if image_desktop
+      assign image_object = image_desktop
+    endif
+
+    assign height = image_object.height
+    assign width = image_object.width | divided_by: 100.00
+
+    if ratio_desktop
+      assign height = ratio_desktop | split: ':' | last | times: 100.00
+      assign width = ratio_desktop | split: ':' | first
+    endif
+
+    assign desktop_aspect_ratio = height | divided_by: width
+
+    if ratio_desktop == false and image_object.aspect_ratio
+      assign desktop_aspect_ratio = 1 | divided_by: image_object.aspect_ratio | times: 100.00
+    endif
+
+    unless ratio_desktop == false or ratio_desktop contains ':'
+      assign desktop_aspect_ratio = 1 | divided_by: ratio_desktop | times: 100.00
+    endunless
+  endif
+-%}
+
+{% comment %}
+-----------------------------------------------------------------------------
+  Output HTML.
+-----------------------------------------------------------------------------
+{% endcomment %}
+<div
+  class="
+    {{ images_class | strip }}
+    {{ class }}
+    liquid
+  "
+  style="animation-delay: {{ animation_delay | default: 0 }}s;"
+>
+  {% unless padding == false %}
+    <span
+      class="{{ images_spacer_class | replace: 'breakpoint', 'mobile' | strip }}"
+      style="padding-block-end: {{ aspect_ratio }}%;"
+      aria-hidden="true"
+    ></span>
+
+    {% if ratio_desktop %}
+      <span
+        class="{{ images_spacer_class | replace: 'breakpoint', 'desktop' | strip }}"
+        style="padding-block-end: {{ desktop_aspect_ratio }}%;"
+        aria-hidden="true"
+      ></span>
+    {% endif %}
+  {% endunless %}
+
+  {% if image != blank %}
+    <picture class="{{ images_picture_class | strip }}">
+      {% for value in breakpoints %}
+        {%- liquid
+          assign key = value | split: '-' | first
+          assign media_query_size = value | split: '-' | last
+          assign size = media_query_size
+          assign desktop = false
+          assign image_object = image
+
+          if breakpoint_sizes.size > 0
+            assign size = breakpoint_sizes[forloop.index0]
+          endif
+
+          assign size_num = size | times: 1
+          assign size_2x = size | times: 2
+
+          if key == 'l' or key == 'xl' or key == 'xxl'
+            assign desktop = true
+          endif
+
+          if image_desktop and desktop
+            assign image_object = image_desktop
+          endif
+        -%}
+
+        <source
+          class="{{ images_image_class | remove: ' lazyload'  }}"
+          {% unless forloop.last %}
+            media="(max-width: {{ media_query_size }}px)"
+          {% endunless %}
+          {% if lazyload %}
+            data-srcset="{{ image_object | image_url: width: size }}"
+          {% else %}
+            srcset="
+              {% if size_num < 768 %}
+                {{ image_object | image_url: width: size }} 1x,
+              {% endif %}
+              {{ image_object | image_url: width: size_2x }} 2x
+            "
+          {% endif %}
+        >
+      {% endfor %}
+
+      {% if lazyload %}
+        <img
+          class="{{ images_image_class }} "
+          alt="{{ image_alt | escape }}"
+          decoding="async"
+          {% if image_alt == blank %}
+            role="presentation"
+          {% endif %}
+            data-src="{{ image | image_url: width: 100 }}"
+        >
+      {% else %}
+        {{ image
+          | image_url: width: nil
+          | image_tag:
+            preload: true,
+            loading: 'eager',
+            fetchpriority: true
+          | replace: '<img ', img_tag_class
+          }}
+      {% endif %}
+
+    </picture>
+  {% endif %}
+</div>

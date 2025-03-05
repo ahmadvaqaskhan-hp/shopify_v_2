@@ -1,0 +1,230 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Gamers banner grid (gamers-banner-grid)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.gamers-banner-grid.css' | asset_url | stylesheet_tag }}
+
+{% assign menu = section.settings.menu %}
+{% capture heroesArr %}
+  [
+    {% for link in linklists[menu].links %}
+      {
+        {% assign value = link.title %}
+        {% assign image_file_name = value | split: 'image:' | last | strip | split: ',' | first | strip %}
+        {% assign banner_subtitle = value | split: '[' | first | strip %}
+        {% assign link_text = value
+          | split: ' ['
+          | last
+          | split: ']'
+          | first
+          | split: ':'
+          | last
+        %}
+        bannerSub: {{ banner_subtitle | json }},
+        {% assign imageUrl = image_file_name | file_url %}
+        imageFile: {{ imageUrl | json }},
+        linkText: {{ link_text | json }},
+        linkUrl: {{ link.url | json }}
+      },
+    {% endfor %}
+  ]
+{% endcapture %}
+{% assign items_per_page =  9 %}
+{% if section.settings.columns == '4' %}
+  {% assign items_per_page = 17 %}
+{% endif %}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="gamers-banner-grid"
+  data-component-type="scroll"
+  data-section-schema="{% if request.design_mode %}{'blocks': [{% for block in section.blocks %}{ 'type': {{ block.type | json | escape }}, 'settings': {{ block.settings | json | escape }} }{% unless forloop.last %},{% endunless %}{% endfor %}],'section': { 'id': {{ section.id | json | escape }}, 'type': 'gamers-banner-grid', 'settings': {{ section.settings | json | escape }} }}{% endif %}"
+  class="gamers-banner-grid"
+>
+  <gamers-banner-grid
+    v-if="getComponentVisible('gamers-banner-grid')"
+    v-cloak
+    :section = "{
+      settings: {
+        button_label: {{ section.settings.button_label | json | escape }},
+        columns: {{ section.settings.columns }},
+        heading_text: {{ section.settings.heading_text | json | escape }},
+        itemsPerPage: {{ items_per_page }},
+      },
+    }"
+    :heroes = "{{ heroesArr | escape }}"
+  ></gamers-banner-grid>
+
+  {% comment %}
+  -----------------------------------------------------------------------------
+  Loading state.
+  -----------------------------------------------------------------------------
+  {% endcomment %}
+
+  <div v-if="!getComponentActive('gamers-banner-grid')">
+    <div class="gamers-banner-grid__container">
+      <div class="
+        gamers-banner-grid__header
+        {% if section.settings.heading_text == blank and section.settings.subtitle == blank %}
+          is-hidden
+        {% endif %}
+      ">
+        {% if section.settings.heading_text %}
+          <div class="h3 gamers-banner-grid__heading">{{ section.settings.heading_text }}</div>
+        {% endif %}
+
+        {% if section.settings.subtitle %}
+          <div class="h6 gamers-banner-grid__subtitle">{{ section.settings.subtitle }}</div>
+        {% endif %}
+      </div>
+
+      <div
+        class="
+          gamers-banner-grid__list
+          {% if section.settings.columns == '4' %}
+            gamers-banner-grid__list--four
+          {% endif %}
+        "
+        data-columns="{{ section.settings.columns }}"
+        js-gamers-banner-grid="list"
+      >
+
+        {% for link in linklists[menu].links %}
+          {% assign value = link.title %}
+          {% assign image_file_name = value | split: 'image:' | last | strip | split: ',' | first | strip %}
+          {% assign banner_subtitle = value | split: '[' | first | strip %}
+          {% assign link_text = value
+            | split: ' ['
+            | last
+            | split: ']'
+            | first
+            | split: ':'
+            | last
+          %}
+          {% assign is_banner = forloop.index | modulo: items_per_page %}
+
+          {%- capture 'grid_item_classes' %}
+            {% if forloop.index > items_per_page %}
+              is-hidden
+            {% endif %}
+            {% if forloop.index == 1 %}
+              {% if section.settings.columns == '4' %}
+                gamers-banner-grid__item--four-bleed
+              {% else %}
+                gamers-banner-grid__item--bleed
+              {% endif %}
+            {% endif %}
+          {%- endcapture -%}
+
+          {%- capture 'aria_hidden' -%}
+            {% if forloop.index > items_per_page %}true{% else %}false{% endif %}
+          {%- endcapture -%}
+
+          {%- capture 'tab_index' -%}
+            {% if forloop.index > items_per_page %}-1{% else %}0{% endif %}
+          {%- endcapture -%}
+
+          {% if link.url != blank and image_file_name != blank and banner_subtitle != blank and link_text != blank %}
+            <div
+              class="
+                gamers-banner-grid__item
+                {{ grid_item_classes }}
+              "
+              aria-hidden="{{- aria_hidden | strip -}}"
+              aria-labelledby="{{- forloop.index | prepend: 'Banner' -}}"
+              {% if link.url != '#' %}
+                data-href="{{ link.url }}"
+              {% endif %}
+              role="region"
+              js-gamers-banner-grid="banner"
+            >
+              <img
+                class="gamers-banner-grid__image lazyload blur-up"
+                src="{{ image_file_name | file_url }}"
+                alt=""
+              >
+
+              <div class="gamers-banner-grid__paragraph">
+                <span class="h5 gamers-banner-grid__desc">{{ banner_subtitle }}</span>
+
+                <a
+                  id="{{- forloop.index | prepend: 'Banner' -}}"
+                  class="text-link gamers-banner-grid__cta"
+                  {% if link.url != '#' %}
+                    href="{{ link.url }}"
+                  {% endif %}
+                  tabindex="{{ tab_index }}"
+                >
+                  {{ link_text }}
+
+                  <span class="gamers-banner-grid__cta-icon">
+
+                  </span>
+                </a>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <div class="gamers-banner-grid__button" js-gamers-banner-grid="load">
+        <button class="button button--secondary" js-gamers-banner-grid="button">
+          {{ section.settings.button_label }}
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Gamers Banner Grid",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading_text",
+      "label": "Heading text",
+      "default": "Section Heading"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Subtitle"
+    },
+    {
+      "type": "select",
+      "id": "columns",
+      "label": "Number of banners per row",
+      "default": "2",
+      "options": [
+        {
+          "label": "Two columns",
+          "value": "2"
+        },
+        {
+          "label": "Four columns",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Select menu"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Load more button label",
+      "default": "Load more"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Gamers Banner Grid"
+    }
+  ]
+}
+{% endschema %}

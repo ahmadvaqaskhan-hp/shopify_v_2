@@ -1,0 +1,122 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet: Product card swatches (product-card-swatches)
+------------------------------------------------------------------------------
+{% endcomment %}
+{% assign product_colors = false %}
+
+{% unless product.has_only_default_variant %}
+  {% for option in product.options_with_values %}
+    {% assign sanitized_option_name = option.name | handleize %}
+    {% if sanitized_option_name contains 'color' or sanitized_option_name contains 'colour' %}
+      {% assign product_colors = option %}
+    {% endif %}
+  {% endfor %}
+{% endunless %}
+
+{% if product_colors and product_colors.values.size > 0 %}
+  {% assign sanitized_selected_color = product_colors.values.first | handleize %}
+
+  <div
+    class="product-card__swatches product-card-swatches is-loading liquid"
+    js-product-card="swatches"
+  >
+    {% for value in product_colors.values %}
+      {% assign sanitized_value = value | handleize %}
+      {% assign swatch_image = sanitized_value
+        | prepend: 'swatch_'
+        | append: '_20x20.png'
+        | file_url
+      %}
+
+      {% assign swatch_classes = 'swatch' %}
+      {% if sanitized_selected_color == sanitized_value %}
+        {% assign swatch_classes = swatch_classes | append: ' is-active' %}
+      {% endif %}
+
+      {% comment %}
+        For each color that exists, find the first variant with that color
+        and grab the image. This will be used to swap out the thumbnail when
+        a user clicks on the swatch.
+      {% endcomment %}
+      {% assign variant_image = '' %}
+      {% for variant in product.variants %}
+        {% assign color_property = 'option' | append: product_colors.position %}
+        {% assign color_name = variant[color_property] %}
+        {% if color_name == value %}
+          {% assign variant_image = variant.image.src | img_url: 'master' %}
+          {% assign variant_id = variant.id %}
+          {% assign variant_price = variant.price %}
+          {% assign variant_compare = variant.compare_at_price %}
+          {% assign swatch_available = variant.available %}
+        {% endif %}
+      {% endfor %}
+
+      {% if bundle_card and swatch_available == false %}
+        {% continue %}
+      {% endif %}
+
+      <button
+        class="product-card-swatches__swatch {{ swatch_classes }}"
+        title="{{ value }}"
+        type="button"
+        data-href="{{ product.url }}?variant-color={{ value | url_encode }}"
+        data-value="{{ value }}"
+        data-variant-image="{{ variant_image }}"
+        data-variant-id="{{ variant_id }}"
+        data-variant-price="{{ variant_price }}"
+        data-variant-compare-price="{{ variant_compare }}"
+        {% if bundle_card %}
+          js-cart-bundle-product="swatch"
+        {% endif %}
+        js-product-card="swatch"
+      >
+        <img
+          alt="{{ value }}"
+          class="product-card-swatches__image"
+          src="{{ swatch_image }}"
+        />
+      </button>
+    {% endfor %}
+  </div>
+{% elsif bundle_card %}
+  <div
+    class="product-card__swatches product-card-swatches is-loading liquid"
+    js-product-card="swatches"
+  >
+    {% assign first_swatch = true %}
+    {% for variant in product.variants %}
+      {% unless variant.available %}
+        {% continue %}
+      {% endunless %}
+
+      {% assign variant_image = variant.image.src | img_url: 'master' %}
+      {% assign swatch_available = variant.available %}
+      {% assign value = variant.title %}
+      {% assign classes = swatch_classes |
+        append: ' product-card-swatches__swatch' |
+        append: ' product-card-swatches__swatch--size'
+      %}
+
+      {% if first_swatch %}
+        {% assign classes = classes | append: ' is-active' %}
+        {% assign first_swatch = false %}
+      {% endif %}
+
+      <button
+        class="{{ classes }}"
+        title="{{ value }}"
+        type="button"
+        data-href="{{ product.url }}?variant-color={{ value | url_encode }}"
+        data-value="{{ value }}"
+        data-variant-image="{{ variant_image }}"
+        data-variant-id="{{ variant.id }}"
+        data-variant-price="{{ variant.price }}"
+        data-variant-compare-price="{{ variant.compare_at_price }}"
+        js-product-card="swatch"
+      >
+        {{ value }}
+      </button>
+    {% endfor %}
+  </div>
+{% endif %}

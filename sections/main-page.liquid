@@ -1,0 +1,43 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Section: Main page
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "main-page", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+{% render 'custom-content' %}
+
+<section
+  class="component-section container grid"
+  aria-labelledby="section-title-{{ section.id }}"
+  data-section-schema="{% if request.design_mode %}{'blocks': [{% for block in section.blocks %}{ 'type': {{ block.type | json | escape }}, 'settings': {{ block.settings | json | escape }} }{% unless forloop.last %},{% endunless %}{% endfor %}],'section': { 'id': {{ section.id | json | escape }}, 'type': 'main-page', 'settings': {{ section.settings | json | escape }} }}{% endif %}"
+>
+  <h1 class="visually-hidden">{{page.title}}</h1>
+  {% unless page.content == blank %}
+    <div class="template-page">
+      <div class="container">
+        <div class="row">
+          <div class="col xs12 m8 offset-m2">
+            <div class="rte page__basic">
+              {{ page.content }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endunless %}
+</section>
+
+{% schema %}
+{
+  "name": "Page",
+  "settings": []
+}
+{% endschema %}

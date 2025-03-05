@@ -1,0 +1,87 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet: Button (btn)
+
+  @param {String} [attributes] - Custom attributes to add to button element,
+  space separated list.
+  @param {String} [block_class] - Block level class to apply to all elements.
+  @param {String} [class] - Additional classes.
+  @param {String} [custom_element] - Optional override to set button element.
+  @param {String} [icon] - Icon to render, pass icon snippet.
+  @param {String} label - Button label.
+  @param {String} [modifiers] - Button modifiers in space separated list
+  (secondary, light, outlined, text, block, reversed, or large).
+  @param {String} [name] - Name of button.
+  @param {Boolean} [show_icon] - Whether to show the button icon.
+  @param {String} [type] - Type of button (button or submit).
+  @param {String} [url] - URL if link.
+------------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  capture default_icon
+    render 'icon-direction' with icon: 'arrow', direction: 'up-right'
+  endcapture
+
+  assign attributes = attributes | split: ' '
+  assign button_class = 'button '
+  assign button_label_class = 'button__label '
+  assign button_icon_class = 'button__icon '
+  assign element = 'button'
+  assign icon = icon | default: default_icon
+  assign modifiers = modifiers | split: ' '
+  assign show_icon = show_icon | default: true, allow_false: true
+
+  if block_class
+    assign button_class = button_class | append: '#__button ' | replace: '#', block_class
+    assign button_label_class = button_label_class | append: '#__button-label ' | replace: '#', block_class
+    assign button_icon_class = button_icon_class | append: '#__button-icon ' | replace: '#', block_class
+  endif
+
+  if custom_element
+    assign element = custom_element
+  endif
+
+  for modifier in modifiers
+    assign button_class = button_class | append: ' button--' | append: modifier
+  endfor
+
+  if show_icon == false
+    assign button_label_class = button_label_class | append: 'button__label--no-icon '
+  endif
+
+  if url != blank
+    assign element = 'a'
+  endif
+-%}
+
+<{{ element }}
+  class="
+    {{ button_class | strip }}
+    {{ class }}
+    liquid
+  "
+  {%- liquid
+    if url
+      echo 'href="#"' | replace: '#', url
+    endif
+    if name
+      echo 'name="#"' | replace: '#', name
+    endif
+    if type
+      echo 'type="#"' | replace: '#', type
+    endif
+    for attribute in attributes
+      echo attribute
+    endfor
+  -%}
+>
+  <span class="{{ button_label_class | strip }}">
+    {{ label }}
+  </span>
+
+  {% if show_icon %}
+    <span class="{{ button_icon_class | strip }}">
+      {{ icon }}
+    </span>
+  {% endif %}
+</{{ element }}>

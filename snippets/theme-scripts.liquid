@@ -1,0 +1,15 @@
+
+<script defer="defer" src="{{ 'vendors.bundle.min.js' | asset_url | split: '?v=' | first | append: '?v=1733162424563'}}" type="text/javascript"></script>
+{% if layout == 'checkout' %}
+<script defer="defer" src="{{ 'layout.checkout.js' | asset_url | split: '?v=' | first | append: '?v=1733162424563'}}" type="text/javascript"></script>
+{% endif %} {% if layout == 'gift_card' %}
+<script defer="defer" src="{{ 'layout.gift_card.js' | asset_url | split: '?v=' | first | append: '?v=1733162424563'}}" type="text/javascript"></script>
+{% endif %} {% if layout == 'password' %}
+<script defer="defer" src="{{ 'layout.password.js' | asset_url | split: '?v=' | first | append: '?v=1733162424563'}}" type="text/javascript"></script>
+{% endif %} {% if layout == 'theme' %}
+<script defer="defer" src="{{ 'layout.theme.js' | asset_url | split: '?v=' | first | append: '?v=1733162424563'}}" type="text/javascript"></script>
+{% endif %} {% if template.directory == 'customers' %}
+<script defer="defer" src="{{ 'template.customers.js' | asset_url | split: '?v=' | first | append: '?v=1733162424563'}}" type="text/javascript"></script>
+{% endif %} {% if template == 'page' %}
+<script defer="defer" src="{{ 'template.page.js' | asset_url | split: '?v=' | first | append: '?v=1733162424563'}}" type="text/javascript"></script>
+{% endif %}

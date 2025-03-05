@@ -1,0 +1,121 @@
+{% comment %}
+----------------------------------------------------------------------------
+  Snippet: Social sharing
+  - Article sharing.
+----------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.social-sharing.css' | asset_url | stylesheet_tag }}
+
+<div class="social-sharing">
+  {% if settings.share_instagram %}
+    <a
+      class="social-sharing__item"
+      href="{{ settings.social_instagram_link }}"
+      target="_blank"
+    >
+      <span class="visually-hidden">
+        {{ 'general.social.instagram' | t }}
+      </span>
+
+      {% render 'icon-social' with icon: 'instagram' %}
+    </a>
+  {% endif %}
+
+  {% if settings.share_facebook %}
+    <a
+      class="social-sharing__item"
+      href="{{ settings.social_facebook_link }}"
+      target="_blank"
+    >
+      <span class="visually-hidden">
+        {{ 'general.social.facebook' | t }}
+      </span>
+
+      {% render 'icon-social' with icon: 'facebook' %}
+    </a>
+  {% endif %}
+
+  {% if settings.share_pinterest %}
+    <a
+      class="social-sharing__item"
+      href="{{ settings.social_pinterest_link }}"
+      target="_blank"
+    >
+      <span class="visually-hidden">
+        {{ 'general.social.pinterest' | t }}
+      </span>
+
+      {% render 'icon-social' with icon: 'pinterest' %}
+    </a>
+  {% endif %}
+
+  {% if settings.share_twitter %}
+    <a
+      class="social-sharing__item"
+      href="{{ settings.social_twitter_link }}"
+      target="_blank"
+    >
+      <span class="visually-hidden">
+        {{ 'general.social.twitter' | t }}
+      </span>
+
+      {% render 'icon-social' with icon: 'twitter' %}
+    </a>
+  {% endif %}
+
+  {% if settings.share_discord %}
+    <a
+      class="social-sharing__item"
+      href="{{ settings.social_discord_link }}"
+      target="_blank"
+    >
+      <span class="visually-hidden">
+        {{ 'general.social.discord' | t }}
+      </span>
+
+      {% render 'icon-social' with icon: 'discord' %}
+    </a>
+  {% endif %}
+
+  {% if settings.share_tiktok %}
+    <a
+      class="social-sharing__item"
+      href="{{ settings.social_tiktok_link }}"
+      target="_blank"
+    >
+      <span class="visually-hidden">
+        {{ 'general.social.tiktok' | t }}
+      </span>
+
+      {% render 'icon-social' with icon: 'tiktok' %}
+    </a>
+  {% endif %}
+
+  {% if settings.share_twitch %}
+    <a
+      class="social-sharing__item"
+      href="{{ settings.social_twitch_link }}"
+      target="_blank"
+    >
+      <span class="visually-hidden">
+        {{ 'general.social.twitch' | t }}
+      </span>
+
+      {% render 'icon-social' with icon: 'twitch' %}
+    </a>
+  {% endif %}
+
+  {% if settings.share_youtube %}
+    <a
+      class="social-sharing__item"
+      href="{{ settings.social_youtube_link }}"
+      target="_blank"
+    >
+      <span class="visually-hidden">
+        {{ 'general.social.youtube' | t }}
+      </span>
+
+      {% render 'icon-social' with icon: 'youtube' %}
+    </a>
+  {% endif %}
+</div>

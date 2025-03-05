@@ -1,0 +1,432 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Dual banner (dual-banner)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.dual-banner.css' | asset_url | stylesheet_tag }}
+
+{% assign banner_items = '' %}
+
+{% for index in (1..2) %}
+  {%- liquid
+    assign banner = 'banner_' | append: index | append: '_'
+
+    assign banner_opacity = banner | append: 'overlay_opacity'
+    assign banner_opacity = section.settings[banner_opacity]
+
+    assign banner_theme = banner | append: 'theme'
+    assign banner_theme = section.settings[banner_theme]
+
+    assign banner_video = banner | append: 'video_url'
+    assign banner_video = section.settings[banner_video]
+
+    assign banner_image = banner | append: 'image'
+    assign banner_image = section.settings[banner_image]
+
+    assign text_alignment = banner | append: 'alignment'
+    assign text_alignment = section.settings[text_alignment]
+
+    assign banner_title = banner | append: 'title'
+    assign banner_title = section.settings[banner_title]
+
+    assign banner_subtitle = banner | append: 'subtitle'
+    assign banner_subtitle = section.settings[banner_subtitle]
+
+    assign banner_cta_link = banner | append: 'cta_link'
+    assign banner_cta_link = section.settings[banner_cta_link]
+
+    assign banner_cta_text = banner | append: 'cta_text'
+    assign banner_cta_text = section.settings[banner_cta_text]
+
+    assign banner_cta_aria = banner | append: 'cta_aria'
+    assign banner_cta_aria = section.settings[banner_cta_aria]
+
+    assign base_class = 'dual-banner'
+    assign paragraph_class = base_class | append: '__item-paragraph'
+    assign overlay_class = base_class | append: '__overlay'
+    assign image_class = base_class | append: '__image'
+    assign video_class = base_class | append: '__video'
+
+    if index == 1
+      assign position = 'first'
+      assign alignment = '--left'
+    else
+      assign position = 'second'
+      assign alignment = '--right'
+    endif
+  -%}
+
+  {%- comment -%} The left side heading {%- endcomment -%}
+  {%- capture heading_html -%}
+    <div
+      class="
+        dual-banner__paragraph
+        {% if section.settings.heading_text == blank and section.settings.subtitle == blank %}
+          is-hidden
+        {% endif %}
+      "
+    >
+      {% if section.settings.heading_text %}
+        <div class="h3 dual-banner__heading">
+          {{ section.settings.heading_text }}
+        </div>
+      {% endif %}
+
+      {% if section.settings.subtitle %}
+        <div class="h6 dual-banner__subtitle">
+          {{ section.settings.subtitle }}
+        </div>
+      {% endif %}
+    </div>
+  {%- endcapture -%}
+
+  {%- comment -%} The background video {%- endcomment -%}
+  {%- capture video_html -%}
+    {% if banner_video == blank or banner_video == '#' %}
+      <div class="dual-banner__image-wrapper">
+        <div
+          class="{{image_class}} {{image_class | append: alignment}} lazyload"
+          data-bgset="{% render 'responsive-bg-image', image: banner_image %}"
+          js-dual-banner="media"
+        ></div>
+      </div>
+    {% else %}
+      <div class="dual-banner__video-wrapper">
+        <div class="dual-banner__player">
+          <video
+            class="{{video_class}} {{video_class | append: alignment }}"
+            autoplay="1"
+            loop="1"
+            muted="1"
+            playsinline="1"
+            poster="{{ banner_image | img_url: 'master' }}"
+            preload="1"
+            js-dual-banner="media"
+          >
+            <source src="{{banner_video}}" type="video/mp4">
+          </video>
+        </div>
+      </div>
+    {% endif %}
+  {%- endcapture -%}
+
+  {%- comment -%} An overlay with set opacity {%- endcomment -%}
+  {%- capture overlay_html -%}
+    {% if banner_opacity != 0 %}
+      <div
+        class="
+          {{overlay_class}}
+          {{overlay_class | append: alignment}}
+        "
+        style="opacity: {{ banner_opacity }};"
+        js-dual-banner="media"
+      >
+      </div>
+    {% endif %}
+  {%- endcapture -%}
+
+  {%- comment -%} The CTA and banner descriptions {%- endcomment -%}
+  {%- capture paragraph_html -%}
+    <div class="
+      {{paragraph_class}}
+      {{paragraph_class | append: alignment}}
+      {{paragraph_class}}--{{text_alignment}}
+    ">
+      <div class="subtitle-2 dual-banner__item-subtitle">
+        {% render 'text-with-icon', text: banner_subtitle %}
+      </div>
+
+      <div class="h5 dual-banner__item-heading">
+        {{ banner_title }}
+      </div>
+
+      {% if banner_cta_link != blank and banner_cta_text != blank%}
+        <div
+          class="
+            dual-banner__item-cta
+            text-link
+            text-link--{{ banner_theme }}
+          "
+        >
+          {{ banner_cta_text }}
+          {% render 'icon-direction', icon: 'arrow', direction: 'up-right' %}
+        </div>
+      {% endif %}
+    </div>
+  {%- endcapture -%}
+
+  {%- comment -%} A banner item {%- endcomment -%}
+  {%- capture banner_item -%}
+    <div class="dual-banner__block dual-banner__block--{{banner_theme}} {{position}}">
+
+      {%- comment -%} Banner heading {%- endcomment -%}
+      {% if position == 'first' %}
+        {{ heading_html }}
+      {% endif %}
+
+      {%- comment -%} The banner {%- endcomment -%}
+      <a
+        class="
+          dual-banner__item
+          {% if position == 'second' %} {{position}} {% endif %}
+        "
+        href="{{ banner_cta_link }}"
+        js-dual-banner="block"
+        aria-label="{{ banner_cta_aria | default: banner_cta_text }}"
+      >
+        {{ video_html }}
+
+        {{ overlay_html }}
+
+        {{ paragraph_html }}
+      </a>
+    </div>
+  {%- endcapture -%}
+
+  {% assign banner_items = banner_items | append: banner_item %}
+{% endfor %}
+
+<section
+  aria-labelledby="dual-banner-{{ section.id }}"
+  data-component-handle="dual-banner"
+  data-component-type="load"
+>
+  <dual-banner
+    v-if="getComponentVisible('dual-banner')"
+    v-cloak
+    banner-items="{{ banner_items | escape }}"
+    :banner-alignment="{{ section.settings.banners_alignment | json | escape }}"
+  ></dual-banner>
+
+  {% comment %}
+  -----------------------------------------------------------------------------
+    Loading state.
+  -----------------------------------------------------------------------------
+  {% endcomment %}
+  <div v-if="!getComponentActive('dual-banner')" class="dual-banner is-loading critical-component-clear liquid">
+    <div class="dual-banner__container {{ section.settings.banners_alignment }}" js-dual-banner="item">
+      {{ banner_items }}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Dual Banner",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section Title"
+    },
+    {
+      "type": "text",
+      "id": "heading_text",
+      "label": "Heading Text",
+      "default": "Heading text"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subtitle Text",
+      "default": "Subtitle Text"
+    },
+    {
+      "type": "select",
+      "id": "banners_alignment",
+      "label": "Section Title Alignment",
+      "default": "left",
+      "options": [
+        {
+          "label": "Left",
+          "value": "left"
+        },
+        {
+          "label": "Right",
+          "value": "right"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Banner 1"
+    },
+    {
+      "type": "range",
+      "id": "banner_1_overlay_opacity",
+      "label": "Banner overlay mask opacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.1,
+      "default": 0.4
+    },
+    {
+      "type": "text",
+      "id": "banner_1_video_url",
+      "label": "Video URL",
+      "default": "#",
+      "info": "Required: CDN to .mov or .mp4. Video will be autoplayed in the background on loop."
+    },
+    {
+      "type": "image_picker",
+      "id": "banner_1_image",
+      "label": "Banner image",
+      "info": "Recommended image size: 1126 x 1380px."
+    },
+    {
+      "type": "select",
+      "id": "banner_1_alignment",
+      "label": "Text alignment in banner",
+      "default": "top",
+      "options": [
+        {
+          "label": "Top",
+          "value": "top"
+        },
+        {
+          "label": "Bottom",
+          "value": "bottom"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "banner_1_theme",
+      "label": "Banner theme",
+      "default": "light",
+      "options": [
+        {
+          "label": "Dark",
+          "value": "dark"
+        },
+        {
+          "label": "Light",
+          "value": "light"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "banner_1_subtitle",
+      "label": "Subtitle text",
+      "default": "Subtitle",
+      "info": "Can include a custom icon. Example: %icon_placeholder%"
+    },
+    {
+      "type": "text",
+      "id": "banner_1_title",
+      "label": "Banner title",
+      "default": "Banner title"
+    },
+    {
+      "type": "text",
+      "id": "banner_1_cta_text",
+      "label": "Banner CTA label",
+      "default": "Shop PC"
+    },
+    {
+      "type": "text",
+      "id": "banner_1_cta_aria",
+      "label": "Banner CTA aria label"
+    },
+    {
+      "type": "url",
+      "id": "banner_1_cta_link",
+      "label": "Banner CTA Link",
+      "default": "/"
+    },
+    {
+      "type": "header",
+      "content": "Banner 2"
+    },
+    {
+      "type": "range",
+      "id": "banner_2_overlay_opacity",
+      "label": "Banner overlay mask opacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.1,
+      "default": 0.4
+    },
+    {
+      "type": "text",
+      "id": "banner_2_video_url",
+      "label": "Video URL",
+      "default": "#",
+      "info": "Required: CDN to .mov or .mp4. Video will be autoplayed in the background on loop."
+    },
+    {
+      "type": "image_picker",
+      "id": "banner_2_image",
+      "label": "Banner image",
+      "info": "Recommended image size: 1126 x 1380px."
+    },
+    {
+      "type": "select",
+      "id": "banner_2_alignment",
+      "label": "Text alignment in banner",
+      "default": "top",
+      "options": [
+        {
+          "label": "Top",
+          "value": "top"
+        },
+        {
+          "label": "Bottom",
+          "value": "bottom"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "banner_2_theme",
+      "label": "Banner theme",
+      "default": "light",
+      "options": [
+        {
+          "label": "Dark",
+          "value": "dark"
+        },
+        {
+          "label": "Light",
+          "value": "light"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "banner_2_subtitle",
+      "label": "Subtitle text",
+      "default": "Subtitle",
+      "info": "Can include a custom icon. Example: %icon_placeholder%"
+    },
+    {
+      "type": "text",
+      "id": "banner_2_title",
+      "label": "Banner title",
+      "default": "Banner title"
+    },
+    {
+      "type": "text",
+      "id": "banner_2_cta_text",
+      "label": "Banner CTA label",
+      "default": "Shop PC"
+    },
+    {
+      "type": "text",
+      "id": "banner_2_cta_aria",
+      "label": "Banner CTA aria label"
+    },
+    {
+      "type": "url",
+      "id": "banner_2_cta_link",
+      "label": "Banner CTA Link",
+      "default": "/"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Dual Banner"
+    }
+  ]
+}
+{% endschema %}

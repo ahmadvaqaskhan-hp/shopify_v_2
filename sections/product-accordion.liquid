@@ -1,0 +1,223 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Product accordion (product-accordion)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.product-accordion.css' | asset_url | stylesheet_tag }}
+
+{% assign namespace = product.metafields.product %}
+{% assign metafield_lang = request.locale.iso_code | downcase %}
+{% assign metafield_namespace = metafield_lang | append: '_product' %}
+{% assign locale_metafields = product.selected_or_first_available_variant.metafields[metafield_namespace] %}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "product-accordion", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+{%-  capture specifications -%}
+  [
+    {% if locale_metafields.tech_specs %}
+      {
+        "type": "tech_specs",
+        "title": "{{ 'product.accordion.tech_specs' | t }}",
+        "specifications": {{ locale_metafields.tech_specs }}
+      },
+    {% endif %}
+    {% if locale_metafields.box_contents %}
+      {
+        "type": "box_contents",
+        "title": "{{ 'product.accordion.box_contents' | t }}",
+        "specifications": "{{ locale_metafields.box_contents }}"
+      },
+    {% endif %}
+    {% if locale_metafields.warranty %}
+      {
+        "type": "warranty",
+        "title": "{{ 'product.accordion.warranty' | t }}",
+        "specifications": "{{ locale_metafields.warranty }}"
+      },
+    {% endif %}
+      {
+        "type": "shipping_and_returns",
+        "title": "{{ 'product.accordion.shipping_return' | t }}",
+        "specifications": "{{ 'product.accordion.shipping_return_content_html' | t }}"
+      }
+  ]
+{%- endcapture -%}
+
+{% if section.settings.overlay_image != blank %}
+  {%- capture background_image -%}
+    {% render 'responsive-bg-image', image: section.settings.overlay_image %}
+  {%- endcapture -%}
+{% endif %}
+
+{% assign desc_items = 'tech_specs, box_contents, warranty, shipping_return, resource_links' | split: ', ' %}
+
+{% capture accordion_text_wrapper_class %}
+  {% if section.settings.overlay_image != blank %}m6{% else %}offset-m2 m8{% endif %}
+{% endcapture %}
+
+{% capture modifiers %}
+  {% if section.settings.overlay_image == blank %}
+    product-accordion--full-width
+  {% endif %}
+{% endcapture %}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="product-accordion"
+  data-component-type="load"
+>
+  <product-accordion
+    v-if="getComponentVisible('product-accordion')"
+    v-cloak
+    :liquid="{
+      sectionId: {{ section.id | json | escape }}
+    }"
+    :specifications="{{ specifications | escape }}"
+    :overlay-image="{{ background_image | json | escape }}"
+  ></product-accordion>
+
+  {% comment %}
+  -----------------------------------------------------------------------------
+    Loading state.
+  -----------------------------------------------------------------------------
+  {% endcomment %}
+  <div
+    v-if="!getComponentActive('product-accordion')"
+    class="product-accordion is-hidden is-loading critical-component-clear liquid">
+    <div class="product-accordion__wrapper">
+      <div
+        class="row container product-accordion__container"
+      >
+        {% if section.settings.overlay_image != blank %}
+          <div class="col xs12 m6">
+            <div
+              class="product-accordion__image product-accordion__image--left lazyload"
+              data-bgset="{% render 'responsive-bg-image', image: section.settings.overlay_image %}"
+            ></div>
+          </div>
+        {% endif %}
+
+        <div class="col xs12 {{ accordion_text_wrapper_class | strip }}">
+          <div
+            class="product-accordion__accordion accordion"
+          >
+            {% for accordion_item in desc_items %}
+              {%- capture data -%}
+                {%- assign item = locale_metafields[accordion_item] -%}
+                {%- if item != null -%}
+                  {%- case accordion_item -%}
+                    {%- when 'tech_specs' -%}
+                      <div class="product-accordion__specs">
+                        {%- for spec in item.value -%}
+                          <div class="product-accordion__specs-block">
+                            <div class="h6">{{ spec['heading'] }}</div>
+                            <ul>
+                              {%- for key_value in spec['specs'] -%}
+                                <li>
+                                  <span class="product-accordion__specs-property">
+                                    {{ key_value[0] }}:
+                                  </span>
+                                  {{ key_value[1] }}
+                                </li>
+                              {%- endfor -%}
+                            </ul>
+                          </div>
+                        {%- endfor -%}
+                      </div>
+
+                    {%- when 'resource_links' -%}
+                      <ul>
+                        {% for link in item.value %}
+                          <li>{{ link }}</li>
+                        {% endfor %}
+                      </ul>
+
+                    {%- else -%}
+                      {{ item }}
+                  {%- endcase -%}
+                {%- else -%}
+                  {%- case accordion_item -%}
+                    {%- when 'shipping_return' -%}
+                      {% unless shop.permanent_domain contains '-row' %}
+                        {{ 'product.accordion.shipping_return_content_html' | t }}
+                      {% endunless %}
+                  {%- endcase -%}
+                {%- endif -%}
+              {%- endcapture -%}
+
+              {% if data.size > 0 %}
+                {% unless shop.permanent_domain contains '-row' and accordion_item == 'shipping_return' %}
+                  <div class="accordion__item" js-accordion="item">
+                    <div
+                      class="accordion__title h6"
+                      aria-controls="product-content-{{ forloop.index }}"
+                      aria-expanded="false"
+                      js-accordion="control"
+                    >
+                      <span class="accordion__label">
+                        {{ 'product.accordion.' | append: accordion_item | t }}
+                      </span>
+
+                      <button
+                        class="product-accordion__control"
+                        id="ProductAccordion{{ forloop.index }}"
+                        aria-controls="product-content-{{ forloop.index }}"
+                        aria-expanded="false"
+                        aria-label="{{ accordion_item }}"
+                        js-accordion="control"
+                      >
+                        {% render 'icon-misc' with icon: 'plus' %}
+                        {% render 'icon-misc' with icon: 'minus' %}
+                      </button>
+                    </div>
+
+                    <div
+                      id="product-content-{{ forloop.index }}"
+                      class="accordion__content"
+                      role="region"
+                      aria-labelledby="ProductAccordion{{ forloop.index }}"
+                      js-accordion="content"
+                      tabindex="-1"
+                    >
+                      <div class="product-accordion__desc body-1">
+                        {{- data -}}
+                      </div>
+                    </div>
+                  </div>
+                {% endunless %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product Accordion",
+  "class": "index-section",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "overlay_image",
+      "label": "Product Image",
+      "info": "Required image type is a PNG. Recommended min dimensions: 1600 x 1600px"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Accordion",
+      "category": "Custom Content Block"
+    }
+  ]
+}
+{% endschema %}

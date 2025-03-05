@@ -1,0 +1,380 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Hero banner (hero-banner)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.hero-banner.css' | asset_url | stylesheet_tag }}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "hero-banner", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+{% capture slides %}
+  [
+    {% for block in section.blocks %}
+      {% if block.type == 'item'  %}
+        {{ block.settings | json | escape }}
+        {% unless forloop.last %},{% endunless %}
+      {% endif %}
+    {% endfor %}
+
+  ]
+{% endcapture %}
+
+{% liquid
+  assign lazyload = true
+  assign slide_count = section.blocks.size
+
+  if section.index == 1
+    if section.settings.enable_one_slide or slide_count < 2
+      assign lazyload = false
+    endif
+  endif
+%}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="hero-banner"
+  data-component-type="load"
+  data-section-id="{{ section.id }}"
+  data-section-type="hero-banner"
+
+>
+
+  <hero-banner
+    v-if="getComponentVisible('hero-banner')"
+    v-cloak
+    :liquid="{
+      sectionId: {{ section.id | json | escape }}
+    }"
+    :slides= "{{ slides }}"
+    :settings= "{{ section.settings | json | escape }}"
+  ></hero-banner>
+
+  <div {% if lazyload %} v-if="!getComponentActive('hero-banner')" {% endif %}>
+    <div id="HeroBanner"
+      class="
+        {% if lazyload %} is-loading critical-component-clear {% endif %}
+        carousel
+        swiper-container
+        hero-banner
+        hero-banner__carousel
+        hero-banner__container
+      "
+    >
+      <div
+        class="
+          liquid
+          swiper-button-prev
+          swiper-button-custom
+          swiper-button-custom--{{ section.settings.banner_theme }}
+          {% if section.settings.enable_one_slide %}
+            is-hidden
+          {% endif %}
+        "
+        js-hero-banner="prev"
+      >
+        {% render 'icon-direction', icon: 'chevron', direction: 'left' %}
+      </div>
+
+      <ul class="swiper-wrapper">
+        {% for block in section.blocks limit: 1 %}
+          {% assign video_url = block.settings.video_url %}
+          {% assign image = block.settings.image %}
+          {% assign mobile_image = block.settings.mobile_image %}
+          {% assign alignment = block.settings.alignment %}
+          {% assign heading = block.settings.heading %}
+          {% assign desc = block.settings.desc %}
+          {% assign primary_cta_text = block.settings.primary_cta_text %}
+          {% assign primary_cta_aria = block.settings.primary_cta_aria %}
+          {% assign primary_cta_link = block.settings.primary_cta_link %}
+          {% assign secondary_cta_text = block.settings.secondary_cta_text %}
+          {% assign secondary_cta_aria = block.settings.secondary_cta_aria %}
+          {% assign secondary_cta_link = block.settings.secondary_cta_link %}
+          {% assign banner_theme = block.settings.banner_theme %}
+
+          {% if image or video_url != blank %}
+            <li
+              class="
+                hero-banner__slide
+                eagerload
+                swiper-slide
+              "
+            >
+              {% if video_url == blank or video_url == '#' %}
+                <div
+                  class="hero-banner__image-wrapper"
+                >
+                  {% render 'art-direction',
+                    image: mobile_image,
+                    image_desktop: image,
+                    lazyload: lazyload,
+                    block_class: 'hero-banner',
+                    ratio: '375:530',
+                    ratio_desktop: '1296:585',
+                  %}
+                </div>
+              {% else %}
+                <div class="hero-banner__player">
+                  <video
+                    class="hero-banner__video"
+                    autoplay="1"
+                    loop="1"
+                    muted="1"
+                    playsinline="1"
+                    poster="{{ image | img_url: '1920x' }}"
+                    preload="1"
+                    js-hero-banner="video"
+                  >
+                    <source src="{{ video_url }}" type="video/mp4">
+                  </video>
+                </div>
+              {% endif %}
+
+              <div
+                class="
+                  hero-banner__paragraph
+                  hero-banner__paragraph--{{ banner_theme }}
+                  {{ alignment }}
+                  {% if lazyload %} is-hidden-desktop {% endif %}
+                "
+                data-alignment="{{ alignment }}"
+              >
+                <div class="hero-banner__content">
+                  {% if heading != blank %}
+                    <h2 class="hero-banner__heading">{{ heading }}</h2>
+                  {% endif %}
+
+                  {% if desc != blank %}
+                    <p class="hero-banner__desc">{{ desc }}</p>
+                  {% endif %}
+
+                  <div class="hero-banner__cta-group {{ alignment }}">
+                    {% if primary_cta_link != blank and primary_cta_text != blank %}
+                      <a
+                        class="
+                          text-link
+                          text-link--{{ section.settings.banner_theme }}
+                          hero-banner__cta
+                          hero-banner__cta--primary
+                          hero-banner__cta--{{ banner_theme }}
+                        "
+                        aria-label="{{ primary_cta_aria | default: primary_cta_text }}"
+                        href="{{ primary_cta_link }}"
+                      >
+                        <span>{{ primary_cta_text }}</span>
+                        {% render 'icon-direction', icon: 'arrow', direction: 'up-right' %}
+                      </a>
+                    {% endif %}
+
+                    {% if secondary_cta_link != blank and secondary_cta_text != blank %}
+                      <a
+                        class="
+                          text-link
+                          text-link--{{ section.settings.banner_theme }}
+                          hero-banner__cta
+                          hero-banner__cta--secondary
+                          hero-banner__cta--{{ banner_theme }}
+                        "
+                        aria-label="{{ secondary_cta_aria | default: secondary_cta_text }}"
+                        href="{{ secondary_cta_link }}"
+                      >
+                        <span>{{ secondary_cta_text }}</span>
+                        {% render 'icon-direction', icon: 'arrow', direction: 'up-right' %}
+                      </a>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+
+      <div
+        class="
+          swiper-button-next
+          swiper-button-custom
+          swiper-button-custom--{{ section.settings.banner_theme }}
+          {% if section.settings.enable_one_slide %}
+            is-hidden
+          {% endif %}
+        "
+        js-hero-banner="next"
+      >
+        {% render 'icon-direction', icon: 'chevron', direction: 'right' %}
+      </div>
+
+      <div
+        class="
+          swiper-pagination
+          swiper-pagination--{{ section.settings.banner_theme }}
+          {{ alignment }}
+          {% if section.settings.enable_one_slide %}
+            is-hidden
+          {% endif %}
+        "
+        js-hero-banner="pagination"
+      ></div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Hero Banner",
+  "class": "index-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Hero Banner"
+    },
+    {
+      "type": "range",
+      "id": "carousel_autoplay",
+      "unit": "s",
+      "label": "Carousel Autoplay Duration",
+      "min": 3,
+      "max": 15,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_one_slide",
+      "label": "Enable Single Slide",
+      "info": "Slide 1 content will be applied when it's enabled",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "name": "Slides",
+      "type": "item",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "header",
+          "content": "Slide",
+          "info": "Slide"
+        },
+        {
+          "type": "text",
+          "id": "video_url",
+          "label": "Video URL",
+          "info": "CDN to .mov or .mp4. Video will be autoplayed in the background on loop."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Hero image",
+          "info": "Recommended size: 2880x1300."
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_image",
+          "label": "Mobile Hero image",
+          "info": "Recommended size: 720x1060."
+        },
+        {
+          "type": "header",
+          "content": "Text content"
+        },
+        {
+          "type": "select",
+          "id": "alignment",
+          "label": "Text block alignment",
+          "default": "right",
+          "options": [
+            {
+              "label": "Left",
+              "value": "left"
+            },
+            {
+              "label": "Right",
+              "value": "right"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "banner_theme",
+          "label": "Slide theme",
+          "default": "light",
+          "options": [
+            {
+              "label": "Dark",
+              "value": "dark"
+            },
+            {
+              "label": "Light",
+              "value": "light"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Slide Heading Text",
+          "default": "We're all gamers"
+        },
+        {
+          "type": "text",
+          "id": "desc",
+          "label": "Slide Description",
+          "default": "Committed to making sure every gamer feels they are included. No matter who you are. or what you play!"
+        },
+        {
+          "type": "header",
+          "content": "CTA"
+        },
+        {
+          "type": "text",
+          "id": "primary_cta_text",
+          "label": "Slide Primary CTA label",
+          "default": "Shop PC"
+        },
+        {
+          "type": "text",
+          "id": "primary_cta_aria",
+          "label": "Slide Primary CTA aria label"
+        },
+        {
+          "type": "url",
+          "id": "primary_cta_link",
+          "label": "Slide Primary CTA Link",
+          "default": "/"
+        },
+        {
+          "type": "text",
+          "id": "secondary_cta_text",
+          "label": "Slide Secondary CTA label",
+          "default": "Shop Console"
+        },
+        {
+          "type": "text",
+          "id": "secondary_cta_aria",
+          "label": "Slide Secondary CTA aria label"
+        },
+        {
+          "type": "url",
+          "id": "secondary_cta_link",
+          "label": "Slide Seconday CTA Link",
+          "default": "/"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero Banner",
+      "category": "Custom Content Block"
+    }
+  ]
+}
+{% endschema %}

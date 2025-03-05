@@ -1,0 +1,88 @@
+{%- liquid
+  capture featured_image_variant_capture
+    for featured_image_variant in product.featured_image.variants
+      echo featured_image_variant.id | append: ','
+    endfor
+  endcapture
+
+  assign image_variant_capture = featured_image_variant_capture | strip_newlines | strip | default: false
+-%}
+
+{
+  liquid: true,
+  sectionId: {{ section.id | json }},
+  id: {{ product.id | json  }},
+  available: {{ product.available | json  }},
+  description: {{ product.description | json  }},
+  hasOnlyDefaultVariant: {{ product.has_only_default_variant | json  }},
+  price: {{ product.price | json  }},
+  sectionId: {{ section.id | json  }},
+  title: {{ product.title | json  }},
+  allowPreOrder: {{ settings.pre_order_pdp | json  }},
+  variants: [
+    {% for variant in product.variants %}
+      {% render 'main-product-variant-data' with variant: variant, product: product  %},
+    {% endfor %}
+  ],
+  tags: {{ product.tags | json  }},
+  url: {{ product.url | json  }},
+  preOrder: {{ product.metafields.global.pre_order | json | default: false }},
+  giftCard: {{ product.gift_card? | json  }},
+  type: {{ product.type | json  }},
+  handle: {{ product.handle | json  }},
+  featuredImage: {
+    alt: {{ product.featured_image.alt | json  }},
+    height: {{ product.featured_image.height | json  }},
+    id: {{ product.featured_image_id | json  }},
+    src: {{ product.featured_image.src | json  }},
+    variant: [{{ image_variant_capture }}],
+    width: {{ product.featured_image.width | json  }},
+  },
+  compareAtPrice: {
+    amount: {{ product.compare_at_price | json  }},
+    currencyCode: {{ shop.currency | json  }},
+    max: {{ product.compare_at_price_max | json  }},
+    min: {{ product.compare_at_price_min | json  }},
+    varies: {{ product.compare_at_price_varies | json  }},
+  },
+  price: {
+    amount: {{ product.price | json }},
+    currencyCode: {{ shop.currency | json  }},
+    max: {{ product.price_max | json }},
+    min: {{ product.price_min | json }},
+    varies: {{ product.price_varies | json }},
+  },
+  options: [
+    {% for option in product.options_with_values %}
+      {
+        index: {{ option.position | minus: 1 }},
+        name: {{ option.name | json  }},
+        values: [
+          {% for value in option.values %}
+            {{ value | json  }},
+          {% endfor %}
+        ],
+      },
+    {% endfor %}
+  ],
+  images: [
+    {% for image in product.images %}
+      {% capture image_variant_capture %}
+        {% for image_variant in image.variants %}
+          {{- image_variant.id | json  -}}
+        {% endfor %}
+      {% endcapture %}
+
+      {% assign image_variant = image_variant_capture | strip_newlines | strip | default: false %}
+
+      {
+        alt: {{ image.alt | json  }},
+        height: {{ image.height | json  }},
+        width: {{ image.width | json  }},
+        src: {{ image.src | json  }},
+        id: {{ image.id | json  }},
+        variant: {{ image_variant }},
+      },
+    {% endfor %}
+  ],
+}

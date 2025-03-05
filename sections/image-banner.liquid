@@ -1,0 +1,206 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Image banner (image-banner)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.image-banner.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign image_alignment = section.settings.image_alignment
+  assign overlay_image = section.settings.overlay_image
+  assign text_alignment = section.settings.text_alignment
+  assign subtitle_text = section.settings.subtitle_text
+  assign heading_text = section.settings.heading_text
+  assign desc = section.settings.desc
+  assign cta_link = section.settings.cta_link
+  assign cta_text = section.settings.cta_text
+  assign cta_aria_label = section.settings.cta_aria_label
+  assign cta_theme = section.settings.cta_theme
+
+  capture background_image
+    render 'responsive-bg-image', image: section.settings.background_image
+  endcapture
+-%}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "image-banner", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="image-banner"
+  data-component-type="load"
+>
+  <image-banner
+    v-if="getComponentVisible('image-banner')"
+    v-cloak
+    :background-image="{{ background_image | json | escape }}"
+    :cta-link="{{ cta_link | json | escape }}"
+    :cta-text="{{ cta_text | json | escape }}"
+    :cta-aria-label="{{ cta_aria_label | json | escape }}"
+    :cta-theme="{{ cta_theme | json | escape }}"
+    :desc="{{ desc | json | escape }}"
+    :heading-text="{{ heading_text | json | escape }}"
+    :image-alignment="{{ image_alignment | json | escape }}"
+    :overlay-image="{
+      alt: {{ overlay_image.alt | json | escape }},
+      src: {{ overlay_image.src | json | escape }}
+    }"
+    :subtitle-text="{{ subtitle_text | json | escape }}"
+    :text-alignment="{{ text_alignment | json | escape }}"
+    :liquid="{
+      sectionId: {{ section.id | json | escape }}
+    }"
+  ></image-banner>
+
+  {% comment %}
+  -----------------------------------------------------------------------------
+    Loading state.
+  -----------------------------------------------------------------------------
+  {% endcomment %}
+  <div v-if="!getComponentActive('image-banner')">
+    {% render 'image-banner-block',
+      image_alignment: image_alignment,
+      background_image: background_image,
+      overlay_image: overlay_image,
+      text_alignment: text_alignment,
+      subtitle_text: subtitle_text,
+      heading_text: heading_text,
+      desc: desc,
+      cta_link: cta_link,
+      cta_text: cta_text,
+      cta_theme: cta_theme,
+      cta_aria_label: cta_aria_label,
+    %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Image banner with text",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Image content"
+    },
+    {
+      "type": "select",
+      "id": "image_alignment",
+      "label": "Image alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image",
+      "info": "Recommended size 614x670px."
+    },
+    {
+      "type": "image_picker",
+      "id": "overlay_image",
+      "label": "Overlay image",
+      "info": "Recommended size 550x550px. It should be png file having transparent background."
+    },
+    {
+      "type": "header",
+      "content": "Text content"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "text",
+      "id": "subtitle_text",
+      "label": "Subtitle text",
+      "default": "Subtitle",
+      "info": "Can include a custom icon. Example: %icon_placeholder%"
+    },
+    {
+      "type": "text",
+      "id": "heading_text",
+      "label": "Heading text",
+      "default": "Section Title"
+    },
+    {
+      "type": "text",
+      "id": "desc",
+      "label": "Description text",
+      "default": "Description"
+    },
+    {
+      "type": "header",
+      "content": "CTA"
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "CTA label",
+      "default": "Shop now"
+    },
+    {
+      "type": "text",
+      "id": "cta_aria_label",
+      "label": "CTA aria label"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA link"
+    },
+    {
+      "type": "select",
+      "id": "cta_theme",
+      "label": "Select button style for CTA",
+      "options": [
+        {
+          "value": "primary",
+          "label": "Primary"
+        },
+        {
+          "value": "secondary",
+          "label": "Secondary"
+        }
+      ],
+      "default": "primary"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Image Banner",
+      "category": "Custom Content Block"
+    }
+  ]
+}
+{% endschema %}

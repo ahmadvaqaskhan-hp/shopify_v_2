@@ -1,0 +1,99 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Customers login (customers-login)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.customers-login.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign register_cta_string = 'customers.login.register.cta' | t
+-%}
+
+<section
+  class="customers component-section"
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="customers-login"
+  data-component-type="load"
+>
+  <div class="customers-login container grid critical-component-clear liquid">
+
+    {% comment %}
+    -----------------------------------------------------------------------------
+      Login column.
+      - Login form.
+      - Guest login.
+      - Forgot password form.
+    -----------------------------------------------------------------------------
+    {% endcomment %}
+    <div
+      class="customers-login__login-column col xs4 l1-5"
+      js-login="container"
+    >
+      <div
+        class="customers-login__reset-success text-body-m is-hidden"
+        js-forgot-password="success"
+      >
+        {{ 'customers.login.forgot_password.success' | t }}
+      </div>
+
+      <div
+        class="customers-login__toggle-form"
+        js-login="loginForm"
+      >
+        {% render 'login-form' %}
+      </div>
+
+      <div
+        class="customers-login__toggle-form is-hidden"
+        js-login="forgotPasswordForm"
+      >
+        {% render 'forgot-password-form' %}
+      </div>
+    </div>
+
+    {% comment %}
+    -----------------------------------------------------------------------------
+      Column divider.
+    -----------------------------------------------------------------------------
+    {% endcomment %}
+    <div class="customers-login__divider col xs4 l1"></div>
+
+    {% comment %}
+    -----------------------------------------------------------------------------
+      Register column.
+    -----------------------------------------------------------------------------
+    {% endcomment %}
+    <div class="customers-login__register-column col xs4 l7-12">
+      <h2 class="customers__title text-heading-2xl">
+        {{ 'customers.login.register.title' | t }}
+      </h2>
+
+      <p class="customers__text text-body-m rte">
+        {{ 'customers.login.register.text_html' | t }}
+      </p>
+
+      {% render 'btn'
+        block_class: 'customers',
+        label: register_cta_string,
+        url: routes.account_register_url,
+      %}
+    </div>
+  </div>
+</section>
+
+{% comment %}
+-----------------------------------------------------------------------------
+  Load Vue component to initialise JS code.
+-----------------------------------------------------------------------------
+{% endcomment %}
+<customers-login
+  v-if="getComponentVisible('customers-login')"
+  v-cloak
+></customers-login>
+
+{% schema %}
+{
+  "name": "Login",
+  "settings": []
+}
+{% endschema %}

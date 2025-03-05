@@ -1,0 +1,62 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Sideqik ugc gallery (sideqik-ugc-gallery)
+  - Static section.
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.sideqik-ugc-gallery.css' | asset_url | stylesheet_tag }}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "sideqik-ugc-gallery", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+<section
+  class="sideqik-ugc-gallery"
+  data-section-id="{{ section.id }}"
+  data-section-type="sideqik-ugc-gallery"
+  js-sideqik-ugc-gallery="container"
+>
+  <div class="container sideqik-ugc-gallery__wrapper" js-sideqik-ugc-gallery="wrapper">
+    {% if settings.ugc_gallery_heading != blank %}
+      <div class="h4 sideqik-ugc-gallery__heading">
+        {{ settings.ugc_gallery_heading }}
+      </div>
+    {% endif %}
+
+    {% if settings.ugc_gallery_id != blank and settings.ugc_gallery_token != blank %}
+      {% render 'ugc-gallery-script' with
+        gallery_id: settings.ugc_gallery_id,
+        gallery_token: settings.ugc_gallery_token,
+      %}
+    {% else %}
+      {{ section.settings.code_block }}
+    {% endif %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Sideqik Ugc Gallery",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "code_block",
+      "label": "Code block"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Sideqik Ugc Gallery"
+    }
+  ]
+}
+{% endschema %}

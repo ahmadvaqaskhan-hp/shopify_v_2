@@ -1,0 +1,108 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Customers account (customers-account)
+  - Static section.
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.customers-account.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign address_book_cta_string = 'customers.account.address_book.cta' | t
+  assign order = customer.orders | first
+  assign recent_order_cta_string = 'customers.account.recent_order.cta' | t
+-%}
+
+<section
+  class="customers"
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="customers-account"
+>
+  <div class="customers-account critical-component-clear liquid">
+    <h1
+      id="section-title-{{ section.id }}"
+      class="text-heading-2xl visually-hidden"
+    >
+      {{ 'customers.account.title' | t }}
+    </h1>
+
+    {% render 'customers-header' %}
+
+    <div class="customers__content component-section container grid">
+
+      {% comment %}
+      -----------------------------------------------------------------------------
+        Recent order.
+      -----------------------------------------------------------------------------
+      {% endcomment %}
+      <div class="col panel xs4 l6">
+        <h2 class="panel__title text-heading-l">
+          {{ 'customers.account.recent_order.title' | t }}
+        </h2>
+
+        {% if customer.orders.size == 0 %}
+          <p class="text-body-m">
+            {{ 'customers.account.recent_order.none' | t }}
+          </p>
+
+        {% else %}
+          {% render 'customers-order-details' with order: order %}
+
+          <div class="panel__footer">
+            {% render 'btn'
+              block_class: 'customers-account',
+              label: recent_order_cta_string,
+              modifiers: 'text',
+              url: '/account?view=orders',
+            %}
+          </div>
+        {% endif %}
+      </div>
+
+      {% comment %}
+      -----------------------------------------------------------------------------
+        Address book.
+      -----------------------------------------------------------------------------
+      {% endcomment %}
+      <div class="col panel xs4 l6">
+        <h2 class="panel__title text-heading-l">
+          {{ 'customers.account.address_book.title' | t }}
+        </h2>
+
+        {% if customer.addresses_count == 0 %}
+          <p class="text-body-m">
+            {{ 'customers.account.address_book.none' | t }}
+          </p>
+
+        {% else %}
+          <div class="panel__body">
+            <div class="order-details">
+              <h3 class="order-details__label text-body-label">
+                {{ 'customers.account.address_book.default_address' | t }}
+              </h3>
+
+              <div class="order-details__field">
+                {% render 'customers-address' with address: customer.default_address %}
+              </div>
+            </div>
+          </div>
+
+          <div class="panel__footer">
+            {% render 'btn'
+              block_class: 'customers-account',
+              label: address_book_cta_string,
+              modifiers: 'text',
+              url: routes.account_addresses_url,
+            %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Account Overview",
+  "settings": []
+}
+{% endschema %}

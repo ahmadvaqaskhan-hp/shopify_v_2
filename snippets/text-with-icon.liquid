@@ -1,0 +1,17 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet: Text with icon (text-with-icon)
+------------------------------------------------------------------------------
+{% endcomment %}
+{%- if text -%}
+  {% assign icon_name = text | split: '%icon_' | last | split: '%' | first %}
+  {% assign icon_template = '%icon_' | append: icon_name | append: '%' %}
+
+  {% if icon_name %}
+    {%- capture icon -%}{% render 'icon-custom', icon: icon_name %}{%- endcapture -%}
+    {{ text | replace: icon_template, icon }}
+
+  {% else %}
+    {{ text }}
+  {% endif %}
+{%- endif -%}

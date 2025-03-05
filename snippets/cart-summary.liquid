@@ -1,0 +1,59 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet: Cart summary (main-cart)
+------------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign checkout_string = 'cart.checkout' | t
+-%}
+
+<div class="main-cart__summary cart-summary critical-component-clear liquid">
+  <div class="cart-summary__title">
+    <span
+      class="cart-summary__title-label h6"
+    >
+      {{ 'cart.summary.total_label' | t }}:
+    </span>
+    <span
+      class="cart-summary__title-total h5"
+    >
+      {{ cart.total_price | money }}
+    </span>
+  </div>
+
+  {% render 'btn' with
+    class: 'cart-summary__submit',
+    label: checkout_string,
+    modifiers: 'primary block',
+    name: 'checkout',
+    type: 'submit',
+  %}
+
+  {% render 'payment-icons' with
+    center: true,
+  %}
+
+  <span class="cart-summary__disclaimer-text body-2">
+    {{ 'cart.general.shipping_at_checkout' | t }}
+  </span>
+
+  <span class="cart-summary__disclaimer-text body-2">
+    {{ 'cart.general.currency_disclaimer' | t: currency: shop.currency }}
+  </span>
+
+  {% if settings.enable_partner_feature %}
+    <div class="cart-summary__partner-feature">
+      {% if settings.partner_feature_image %}
+        {% render 'responsive-image' with
+          wrapper_class: 'cart-summary__partner-feature-image'
+          image: settings.partner_feature_image,
+          max_width: 98,
+        %}
+      {% endif %}
+
+      {% if settings.partner_feature_caption %}
+        <p class="cart-summary__partner-feature-caption body-2">{{ settings.partner_feature_caption }}</p>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>

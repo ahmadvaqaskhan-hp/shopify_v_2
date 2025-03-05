@@ -1,0 +1,180 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Product carousel (product-carousel)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.product-carousel.css' | asset_url | stylesheet_tag }}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in block.settings %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "product-carousel", "settings": {{ block.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+{% capture cta %}
+  [
+    {% if block.settings.cta_text_1 != blank and block.settings.cta_link_1 != blank %}
+      {
+        text: {{ block.settings.cta_text_1 | json }},
+        link: {{ block.settings.cta_link_1 | json }},
+        style: {% if block.settings.cta_style_1 != blank %}{{ block.settings.cta_style_1 | json }}{% else %}""{% endif %}
+      },
+    {% endif %}
+    {% if block.settings.cta_text_2 != blank and block.settings.cta_link_2 != blank %}
+      {
+        text: {{ block.settings.cta_text_2 | json }},
+        link: {{ block.settings.cta_link_2 | json }},
+        style: {% if block.settings.cta_style_2 != blank %}{{ block.settings.cta_style_2 | json }}{% else %}""{% endif %}
+      }
+    {% endif %}
+  ]
+{% endcapture %}
+
+{% assign featured_collection = collections[block.settings.featured_collection] %}
+
+{%- capture products -%}
+  [
+    {% for product in featured_collection.products limit: 10 %}
+      {{ product | json | escape }}
+      {% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ]
+{%- endcapture -%}
+
+{%- capture buttons -%}
+
+  {%- capture modifiers_1 -%}
+    {% if block.settings.cta_style_1 == 'text-link' %}
+      product-carousel__link--text
+    {% endif %}
+  {%- endcapture -%}
+
+  {% if
+    block.settings.cta_text_1 != blank and
+    block.settings.cta_link_1 != blank
+  %}
+    <div class="product-carousel__link text-left {{ modifiers_1 }}">
+      <a class="{{ block.settings.cta_style_1 }}" href="{{ block.settings.cta_style_1 }}">
+        <span>{{ block.settings.cta_text_1 }}</span>
+        {% render 'icon-direction', icon: 'arrow', direction: 'up-right' %}
+      </a>
+    </div>
+  {% endif %}
+
+  {%- capture modifiers_2 -%}
+    {% if block.settings.cta_style_2 == 'text-link' %}
+      product-carousel__link--text
+    {% endif %}
+  {%- endcapture -%}
+
+  {% if
+    block.settings.cta_text_2 != blank and
+    block.settings.cta_link_2 != blank
+  %}
+    <div class="product-carousel__link text-left {{ modifiers_2 }}">
+      <a class="{{ block.settings.cta_style_2 }}" href="{{ block.settings.cta_style_2 }}">
+        <span>{{ block.settings.cta_text_2 }}</span>
+        {% render 'icon-direction', icon: 'arrow', direction: 'up-right' %}
+      </a>
+    </div>
+  {% endif %}
+{%- endcapture -%}
+
+{% unless
+  featured_collection == blank or
+  featured_collection.products.size == 0
+%}
+  <section
+    class="product-carousel container"
+    aria-labelledby="section-title-{{ section.id }}"
+    data-component-handle="product-carousel"
+    data-component-type="load"
+  >
+    <product-carousel
+      v-if="getComponentVisible('product-carousel')"
+      v-cloak
+      :liquid="{
+        sectionId: {{ section.id | json | escape }}
+      }"
+      :settings="{{ block.settings | json | escape }}"
+      :collection="{{ featured_collection | json | escape }}"
+      :products="{{ products }}"
+      :buttons="{{ cta | escape }}"
+    ></product-carousel>
+
+    {% comment %}
+    -----------------------------------------------------------------------------
+      Loading state.
+    -----------------------------------------------------------------------------
+    {% endcomment %}
+    <div v-if="!getComponentActive('product-carousel')">
+      <div class="product-carousel__wrapper row is-loading critical-component-clear liquid">
+        <div class="product-carousel__content-wrapper">
+          <div class="product-carousel__content">
+            {% if block.settings.title != blank %}
+              <div class="product-carousel__title h4">
+                {{ block.settings.title }}
+              </div>
+            {% endif %}
+
+            {% if block.settings.subtitle != blank %}
+              <p class="product-carousel__subtitle h6">
+                {{ block.settings.subtitle }}
+              </p>
+            {% endif %}
+
+            <div class="product-carousel__links-wrapper">{{ buttons }}</div>
+          </div>
+        </div>
+
+        <div class="product-carousel__carousel-wrapper swiper-outer-container">
+          <div
+            class="swiper-button-prev swiper-button-custom"
+            js-product-carousel="prev"
+          >
+            {% render 'icon-direction' with icon: 'chevron', direction: 'left' %}
+          </div>
+
+          <div
+            id="ProductCarousel-{{ section.id }}"
+            class="product-carousel__carousel swiper-container"
+            js-carousel="container"
+            js-product-carousel="carousel"
+          >
+
+            <ul class="product-carousel__slide-wrap swiper-wrapper">
+              {% for product in featured_collection.products limit: block.settings.max_slide_size %}
+                <li
+                  class="product-carousel__slide swiper-slide"
+                  js-carousel="cell"
+                  js-product-carousel="slide"
+                  data-next-slide="{{ 'general.accessibility.nextSlideMessage' | t }}"
+                  data-prev-slide="{{ 'general.accessibility.prevSlideMessage' | t }}"
+                >
+                  {% render 'product-card' with
+                    product: product,
+                    collection: featured_collection
+                  %}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <div
+            class="swiper-button-next swiper-button-custom"
+            js-product-carousel="next"
+          >
+            {% render 'icon-direction' with icon: 'chevron', direction: 'right' %}
+          </div>
+        </div>
+
+        <div class="product-carousel__links-wrapper mobile">
+          {{ buttons }}
+        </div>
+      </div>
+    </div>
+  </section>
+{% endunless %}

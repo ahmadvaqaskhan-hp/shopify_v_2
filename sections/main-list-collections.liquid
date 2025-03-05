@@ -1,0 +1,72 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Main list collections (main-list-collections)
+  - Static section.
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.main-list-collections.css' | asset_url | stylesheet_tag }}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "main-list-collections", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+<section
+  class="component-section"
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="main-list-collections"
+  data-section-schema="{% if request.design_mode %}{'blocks': [{% for block in section.blocks %}{ 'type': {{ block.type | json | escape }}, 'settings': {{ block.settings | json | escape }} }{% unless forloop.last %},{% endunless %}{% endfor %}],'section': { 'id': {{ section.id | json | escape }}, 'type': 'main-list-collections', 'settings': {{ section.settings | json | escape }} }}{% endif %}"
+>
+  <div class="main-list-collections container critical-component-clear liquid">
+    <h1
+      id="section-title-{{ section.id }}"
+      class="main-list-collections__title text-heading-2xl"
+    >
+      {{ 'list_collections.title' | t }}
+    </h1>
+
+    {% paginate collections by settings.collections_per_page %}
+      <div class="main-list-collections__grid grid">
+        {% for collection in collections %}
+          {%- liquid
+            assign alt = collection.image.alt | default: collection.title | escape
+            assign image = collection.image | default: collection.products.first.featured_image
+          -%}
+
+          <div class="col xs2 l4">
+            <a
+              class="main-list-collections__card"
+              href="{{ collection.url }}"
+            >
+              {% render 'responsive-image' with
+                alt: alt,
+                block_class: 'main-list-collections',
+                image: image,
+                ratio: '3:2',
+              %}
+
+              <h2 class="text-body-m">
+                {{ collection.title }}
+              </h2>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if paginate.pages > 1 %}
+        {% render 'pagination' with paginate: paginate %}
+      {% endif %}
+    {% endpaginate %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "List Collections",
+  "settings": []
+}
+{% endschema %}

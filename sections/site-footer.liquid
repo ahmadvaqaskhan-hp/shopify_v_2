@@ -1,0 +1,310 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Section: Site footer
+-----------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.site-footer.css' | asset_url | stylesheet_tag }}
+
+{%- capture footer_menu -%}
+  [
+    {% for i in (1..3) %}
+      {% assign menu_string = 'menu_#' | replace: '#', i %}
+      {% assign menu = section.settings[menu_string] %}
+      {% if linklists[menu].links.size > 0 %}
+        {
+          title: {{ linklists[menu].title | json | escape }},
+          sublinks: [
+            {% for link in linklists[menu].links %}
+              {
+                title: {{ link.title | json | escape }},
+                url: {{ link.url | json | escape }}
+              }
+            {% unless forloop.last %},{% endunless %}
+            {% endfor %}
+          ]
+        }
+      {% endif %}
+      {% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ]
+{%- endcapture -%}
+
+{%- capture social_sharing -%}
+  <div class="site-footer__social-header">
+    <div class="site-footer__social-title h5">
+      {{ 'general.footer.social_share_title' | t }}
+    </div>
+    <p class="site-footer__social-subtitle body-1">
+      {{ 'general.footer.social_share_subtitle' | t }}
+    </p>
+    {% render 'social-sharing' %}
+  </div>
+{%- endcapture -%}
+
+{%- capture newsletter_header -%}
+  <div class="newsletter-callout__header">
+    <h2 class="newsletter-callout__title h5" for="Email">
+      {{ 'general.newsletter_form.title' | t }}
+    </h2>
+
+    <p class="newsletter-callout__subtitle body-1">
+      {{ 'general.newsletter_form.subtitle' | t }}
+    </p>
+  </div>
+{%- endcapture -%}
+
+{% form 'customer', id: 'newsletter-errors' %}
+  {% capture newsletter_errors %}
+    {% if form.errors %}
+        {{ form.errors | default_errors }}
+    {% endif %}
+  {% endcapture %}
+{% endform %}
+
+{%- capture site_logo -%}
+  <div class="site-footer__logo">
+    {% render 'site-logo' %}
+  </div>
+{%- endcapture -%}
+
+{%- capture footer_accordion -%}
+  <div
+    id="FooterAccordion"
+    class="site-footer__accordion accordion"
+    js-accordion="container"
+    js-site-footer="accordion"
+  >
+    {% for i in (1..3) %}
+      {% assign menu_string = 'menu_#' | replace: '#', i %}
+      {% assign menu = section.settings[menu_string] %}
+      {% if linklists[menu].links.size > 0 %}
+        <div class="col xs12 m4 l3">
+          <div class="accordion__item" js-accordion="item">
+            <div
+              class="accordion__title h5"
+              aria-controls="content-{{ i }}"
+              aria-expanded="false"
+              js-accordion="control"
+            >
+              <span
+                aria-controls="content-{{ i }}"
+                aria-expanded="false"
+                js-accordion="control"
+              >
+                {{ linklists[menu].title }}
+              </span>
+              <button
+                class="site-footer__control"
+                id="Accordion{{ i }}"
+                aria-controls="content-{{ i }}"
+                aria-expanded="false"
+                aria-label="{{ linklists[menu].title }}"
+                js-accordion="control"
+              >
+                {% render 'icon-misc' with icon: 'plus' %}
+                {% render 'icon-misc' with icon: 'minus' %}
+              </button>
+            </div>
+            <div
+              id="content-{{ i }}"
+              class="accordion__content"
+              role="region"
+              aria-labelledby="Accordion{{ i }}"
+              js-accordion="content"
+            >
+              <ul class="site-footer__navlist navlist">
+                {% for link in linklists[menu].links %}
+                  <li class="navlist__item">
+                    <a
+                      class="navlist__link body-1"
+                      aria-label="{{ link.title }}"
+                      title="{{ link.title }}"
+                      href="{{ link.url }}"
+                    >
+                      {{ link.title }}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+{%- endcapture -%}
+
+{% capture footnote_disclaimer %}
+  {% assign current_year = 'now' | date: '%Y' %}
+  {{ 'general.footer.footer_note' | t: current_year: current_year }}
+{% endcapture %}
+
+{%- capture footnote_misc -%}
+
+  {% if section.settings.show_payment_icons %}
+    {% unless
+      shop.enabled_payment_types == empty and
+      settings.store_transactional_type != 'non-transactional-hp'
+    %}
+      <div class="site-footer__payment-icons">
+        <span class="visually-hidden">
+          {{ 'general.footer.payment_methods' | t }}
+        </span>
+
+        {% render 'payment-icons' %}
+      </div>
+    {% endunless %}
+  {% endif %}
+
+  {% if settings.enable_partner_feature %}
+    <div class="site-footer__partner-feature">
+      {% if settings.partner_feature_image %}
+        {% if cart %}
+          {% render 'responsive-image' with
+            wrapper_class: 'site-footer__partner-feature-image'
+            image: settings.partner_feature_image,
+            max_width: 120,
+          %}
+        {% else %}
+          <img
+            src="{{ settings.partner_feature_image | img_url: '120x' }}"
+            alt="{{ settings.partner_feature_image.alt }}"
+            class="site-footer__partner-feature-image"
+          >
+        {% endif %}
+      {% endif %}
+
+      {% if settings.partner_feature_caption %}
+        <p class="site-footer__partner-feature-caption body-2">{{ settings.partner_feature_caption }}</p>
+      {% endif %}
+    </div>
+  {% endif %}
+{%- endcapture -%}
+
+<footer
+  class="site-footer critical-clear"
+  data-section-id="{{ section.id }}"
+  data-component-handle="site-footer"
+  data-component-type="scroll"
+  js-site-footer="container"
+>
+  <site-footer
+    v-if="getComponentVisible('site-footer')"
+    social-sharing="{{ social_sharing | escape }}"
+    newsletter="{{ newsletter_header | escape }}"
+    site-logo="{{ site_logo | escape }}"
+    footer-accordion="{{ footer_accordion | escape }}"
+    footnote-misc="{{ footnote_misc | escape }}"
+    footnote-disclaimer="{{ footnote_disclaimer | escape }}"
+    :footer-menu="{{ footer_menu }}"
+    :requires-consent="{{ section.settings.require_newsletter_consent | escape }}"
+    :consent-content="{{ section.settings.consent_content | json | escape }}"
+    :newsletter-errors="{{ newsletter_errors | json | escape }}"
+    v-cloak
+  ></site-footer>
+
+  {% comment %}
+  ----------------------------------------------------------------------------
+    Loading state.
+  ----------------------------------------------------------------------------
+  {% endcomment %}
+  <div v-if="!getComponentActive('site-footer')">
+    <div class="site-footer is-loading critical-component-clear liquid">
+      {% unless checkout.id %}
+        <div class="site-footer__header">
+          <div class="container">
+            <div class="row no-gutter">
+              <div class="col xs12 m6">
+                <div class="site-footer__social">
+                  {{ social_sharing }}
+                </div>
+              </div>
+              <div class="col xs12 m6">
+                <div class="site-footer__newsletter">
+                  {% render 'newsletter-callout' with
+                    require_consent: section.settings.require_newsletter_consent,
+                    consent_content: section.settings.consent_content
+                  %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endunless %}
+      <div class="site-footer__main">
+        <div class="container">
+          <div class="row site-footer__menu">
+            <div class="col xs12 m3 push-m9">
+              {{ site_logo }}
+            </div>
+
+            <div class="col xs12 m9 pull-m3">
+              {{ footer_accordion }}
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col xs12">
+              <div class="site-footer__footnote">
+                <p class="site-footer__disclaimer body-2">
+                  {{ footnote_disclaimer }}
+                </p>
+                <div class="site-footer__misc">
+                  {{ footnote_misc }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Site Footer",
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "menu_1",
+      "label": "Primary menu",
+      "default": "footer"
+    },
+    {
+      "type": "link_list",
+      "id": "menu_2",
+      "label": "Secondary menu",
+      "default": "footer"
+    },
+    {
+      "type": "link_list",
+      "id": "menu_3",
+      "label": "Tertiary menu",
+      "default": "footer"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_payment_icons",
+      "label": "Show payment icons",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Newsletter Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "require_newsletter_consent",
+      "label": "Require newsletter consent",
+      "info": "Require users to check a consent checkbox before submitting the form",
+      "default": true
+    },
+    {
+      "type": "richtext",
+      "id": "consent_content",
+      "label": "Consent Content"
+    }
+  ]
+}
+{% endschema %}

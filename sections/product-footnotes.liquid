@@ -1,0 +1,58 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Product footnotes (product-footnotes)
+  - Static section.
+------------------------------------------------------------------------------
+{% endcomment %}
+{% liquid
+  assign metafield_lang = request.locale.iso_code | downcase
+  assign metafield_namespace = metafield_lang | append: '_product'
+  assign locale_metafields = product.metafields[metafield_namespace]
+  assign footnotes = locale_metafields.footnotes.value
+%}
+
+{{ 'component.product-footnotes.css' | asset_url | stylesheet_tag }}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "product-footnotes", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="product-footnotes"
+  data-section-schema="{% if request.design_mode %}{'blocks': [{% for block in section.blocks %}{ 'type': {{ block.type | json | escape }}, 'settings': {{ block.settings | json | escape }} }{% unless forloop.last %},{% endunless %}{% endfor %}],'section': { 'id': {{ section.id | json | escape }}, 'type': 'product-footnotes', 'settings': {{ section.settings | json | escape }} }}{% endif %}"
+>
+  <div class="product-footnotes critical-component-clear liquid">
+    {% if footnotes != blank %}
+      <div class="template-product__footnotes">
+        <div class="container">
+          <ol>
+            {% for footnote in footnotes %}
+              <li>
+                <p>{{ footnote }}</p>
+              </li>
+            {% endfor %}
+          </ol>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product Footnotes",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Product Footnotes"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,39 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Section: Main 404
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "main-404", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+<section
+  class="component-section container grid"
+  aria-labelledby="section-title-{{ section.id }}"
+  data-section-schema="{% if request.design_mode %}{'blocks': [{% for block in section.blocks %}{ 'type': {{ block.type | json | escape }}, 'settings': {{ block.settings | json | escape }} }{% unless forloop.last %},{% endunless %}{% endfor %}],'section': { 'id': {{ section.id | json | escape }}, 'type': 'main-404', 'settings': {{ section.settings | json | escape }} }}{% endif %}"
+>
+  <div class="col xs4 l3-10 rte text-center">
+    <h1
+      id="section-title-{{ section.id }}"
+      class="text-heading-2xl"
+    >
+      {{ '404.title' | t }}
+    </h1>
+
+    <p class="text-body-m text-heading-l-desktop">
+      {{ '404.text_html' | t }}
+    </p>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "404 Error",
+  "settings": []
+}
+{% endschema %}

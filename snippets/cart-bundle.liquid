@@ -1,0 +1,93 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet: Cart bundle (cart-bundle)
+------------------------------------------------------------------------------
+{% endcomment %}
+<div
+  id="bundleCartDrawerAccordion"
+  class="cart-bundle accordion is-hidden"
+  js-accordion="container"
+>
+  <div
+    class="accordion__item"
+    js-accordion="item"
+  >
+    <div class="accordion__title">
+      <div
+        class="cart-bundle__control accordion__control subtitle-1"
+        id="bundleCartDrawerAccordion1"
+        aria-controls="bundleCartDrawerContent"
+        aria-expanded="false"
+        js-accordion="control"
+      >
+
+        <span>{% render 'icon-misc', icon: 'tag' %}</span>
+
+        <div class="cart-bundle__heading">
+          <span class="cart-bundle__title" js-cart-bundle="title"></span>
+          <p class="cart-bundle__description" js-cart-bundle="description"></p>
+        </div>
+
+        <div class="cart-bundle__cta">
+          <span
+            class="cart-bundle__cta--show"
+            js-cart-bundle="cta-show"
+          >
+            {{ 'product_bundles.cart_cta' | t }}
+          </span>
+          <span
+            class="is-hidden cart-bundle__cta--hide"
+            js-cart-bundle="cta-hide"
+          >
+            {{ 'product_bundles.cart_cta_cancel' | t }}
+          </span>
+          <span
+            class="cart-bundle__cta--chevron"
+            js-cart-bundle="cta-chevron"
+          >
+            {% render 'icon-direction', icon: 'chevron-down' %}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="bundleCartDrawerContent"
+      class="accordion__content cart-bundle__container"
+      role="region"
+      aria-labelledby="bundleCartDrawerAccordion1"
+      js-accordion="content"
+    >
+
+      <div js-cart-bundle-carousel="container">
+        <div
+          class="swiper-button-prev swiper-button-custom"
+          js-cart-bundle-carousel="prev"
+        >
+          {% render 'icon-direction' with icon: 'chevron-left' %}
+        </div>
+
+        <div
+          id="BundleCartCarousel-0"
+          class="cart-bundle__carousel swiper swiper-container"
+          js-carousel="container"
+          js-cart-bundle-carousel="carousel"
+        >
+          <ul
+            class="cart-bundle__slide-wrap swiper-wrapper"
+            js-cart-bundle-carousel="wrapper"
+          >
+          </ul>
+        </div>
+
+        <div
+          class="swiper-button-next swiper-button-custom"
+          js-cart-bundle-carousel="next"
+        >
+          {% render 'icon-direction' with icon: 'chevron-right' %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

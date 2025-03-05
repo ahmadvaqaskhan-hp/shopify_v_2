@@ -1,0 +1,63 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Shipping metadata (shipping-metadata)
+  - Static section.
+------------------------------------------------------------------------------
+{% endcomment %}
+<script type="text/javascript">
+  window.shipping_meta = {
+    disclaimer: {{ section.settings.disclaimer | json }},
+    showInMethods: {{ section.settings.show_in_methods | json }},
+    methods: [
+      {% for block in section.blocks %}
+        {
+          title: {{ block.settings.title | json }},
+          meta: {{ block.settings.meta | json }}
+        }{% unless forloop.last %},{% endunless %}
+      {% endfor %}
+    ]
+  }
+</script>
+
+{% schema %}
+{
+  "name": "Shipping Metadata",
+  "settings": [
+    {
+      "type": "richtext",
+      "id": "disclaimer",
+      "label": "Disclaimer"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_in_methods",
+      "label": "Show Disclaimer in Method tooltips",
+      "default": false,
+      "info": "If enabled, the disclaimer will show in each shipping methods tooltip"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "method",
+      "name": "Shipping Method",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Shipping Method Title"
+        },
+        {
+          "type": "text",
+          "id": "meta",
+          "label": "Meta"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shipping Metadata"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,309 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Product bundles (product-bundles)
+------------------------------------------------------------------------------
+{% endcomment %}
+{% unless section.settings.enable_product_bundles == false %}
+  {%- liquid
+    if template == 'product' and product
+      for block in section.blocks
+        if block.settings.bundle_type == 'category'
+          if product.type == block.settings.bundle_category
+            assign has_bundle = true
+            assign discounted_products = block.settings.discounted_products
+            assign discount_amount = block.settings.discount_amount
+            assign discount_amount_save = block.settings.discount_amount_save
+            assign heading = block.settings.heading | default: section.settings.heading
+            assign copy = block.settings.copy | default: section.settings.copy
+            break
+          endif
+        else
+          if product.id == block.settings.parent_product.id
+            if block.settings.parent_product.id == product.id
+              assign has_bundle = true
+              assign discounted_products = block.settings.discounted_products
+              assign discount_amount_save = block.settings.discount_amount_save
+              assign heading = block.settings.heading | default: section.settings.heading
+              assign copy = block.settings.copy | default: section.settings.copy
+              break
+            endif
+          endif
+        endif
+      endfor
+    endif
+  -%}
+
+  <script>
+    window.cnvs.productBundles = {
+      cartHeader: {{ section.settings.cart_heading | json }},
+      cartDescription: {{ section.settings.cart_copy | json }},
+      cartLineMessage: {{ section.settings.cart_message | json }},
+      items: [
+        {% for block in section.blocks %}
+          {
+            discountedProducts: [
+              {% for discounted_product in block.settings.discounted_products %}
+                {% assign discountedProduct = all_products[discounted_product.handle] %}
+                {
+                  discountedProduct: {{ discountedProduct | json }},
+                  discountedProductUrl: {{ discountedProduct.url | json }},
+                  discountedProductId: {{ discountedProduct.id | json }},
+                  {% if discountedProduct.options[0] == 'Color' or discountedProduct.options[0] == 'Colour' %}
+                    swatchUrls: {
+                      {% for item in discountedProduct.variants %}
+                        {% assign color = item.options[0] | downcase  %}
+                        {% assign swatch_url = color
+                          | handleize
+                          | prepend: 'swatch_'
+                          | append: '_20x20.png'
+                          | file_url
+                        %}
+                        {{ color | json }}: {{ swatch_url | json }}
+                        {% unless forloop.last %},{% endunless %}
+                      {% endfor %}
+                    },
+                  {% endif %}
+                }
+                {% unless forloop.last %},{% endunless %}
+              {% endfor %}
+            ],
+            bundleType: {{ block.settings.bundle_type | json }},
+            bundleCategory: {{ block.settings.bundle_category | json }},
+            heading: {{ block.settings.heading | default: section.settings.heading | json }},
+            copy: {{ block.settings.copy | default: section.settings.copy | json }},
+            parentProductId: {{ block.settings.parent_product.id | json }},
+            discountAmount: {{ block.settings.discount_amount | json }},
+            discountAmountSaved: {{ block.settings.discount_amount_save | json }},
+            discountType: {{ block.settings.discount_type | json }},
+          }{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      ]
+    }
+  </script>
+
+{% endunless %}
+
+{% schema %}
+{
+  "name": "Product Bundles",
+  "class": "index-section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_product_bundles",
+      "label": "Enable Product Bundles",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Cart message"
+    },
+    {
+      "type": "text",
+      "id": "cart_heading",
+      "label": "Cart heading",
+      "default": "Get discount on add-ons"
+    },
+    {
+      "type": "text",
+      "id": "cart_copy",
+      "label": "Cart subcopy",
+      "default": "See products that match the items in your cart"
+    },
+    {
+      "type": "header",
+      "content": "Call out content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Save with Bundle"
+    },
+    {
+      "type": "text",
+      "id": "copy",
+      "label": "Subcopy",
+      "default": "Add this product with an add-on to your bag and save on the second product."
+    },
+    {
+      "type": "text",
+      "id": "cart_message",
+      "label": "Cart Line Item Message",
+      "default": "Add-on product discount applied",
+      "info": "To edit the discount message in checkout, go to the [script editor](/admin/apps/script-editor/)"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product-bundle",
+      "name": "Product Bundle",
+      "settings": [
+        {
+          "type": "select",
+          "id": "bundle_type",
+          "label": "Bundle Type",
+          "default": "single",
+          "options": [
+            {
+              "label": "Single Product",
+              "value": "single"
+            },
+            {
+              "label": "Product Category",
+              "value": "category"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "bundle_category",
+          "label": "Bundle Category",
+          "default": "Gaming Keyboards",
+          "info": "Only if setting above is set to category",
+          "options": [
+            {
+              "label": "Accessories",
+              "value": "Accessories"
+            },
+            {
+              "label": "Bundles",
+              "value": "Bundles"
+            },
+            {
+              "label": "Earbuds",
+              "value": "Earbuds"
+            },
+            {
+              "label": "Gaming Controllers",
+              "value": "Gaming Controllers"
+            },
+            {
+              "label": "Gaming Mouse Pads",
+              "value": "Gaming Mouse Pads"
+            },
+            {
+              "label": "Gaming Keyboards",
+              "value": "Gaming Keyboards"
+            },
+            {
+              "label": "Gaming Headsets",
+              "value": "Gaming Headsets"
+            },
+            {
+              "label": "Gaming Mice",
+              "value": "Gaming Mice"
+            },
+            {
+              "label": "Headset Accessories",
+              "value": "Headset Accessories"
+            },
+            {
+              "label": "HP Home Desktop PCs",
+              "value": "HP Home Desktop PCs"
+            },
+            {
+              "label": "HP Home Laptop PCs",
+              "value": "HP Home Laptop PCs"
+            },
+            {
+              "label": "Keyboard Accessories",
+              "value": "Keyboard Accessories"
+            },
+            {
+              "label": "Microphones",
+              "value": "Microphones"
+            },
+            {
+              "label": "Microphone Accessories",
+              "value": "Microphone Accessories"
+            },
+            {
+              "label": "Monitor Accessories",
+              "value": "Monitor Accessories"
+            },
+            {
+              "label": "Monitors",
+              "value": "Monitors"
+            },
+            {
+              "label": "Power",
+              "value": "Power"
+            },
+            {
+              "label": "Streaming",
+              "value": "Streaming"
+            },
+            {
+              "label": "Video",
+              "value": "Video"
+            }
+          ]
+        },
+        {
+          "type": "product",
+          "id": "parent_product",
+          "label": "Product",
+          "info": "Setting is ignored when set to category"
+        },
+        {
+          "type": "product_list",
+          "id": "discounted_products",
+          "label": "Discounted Product"
+        },
+        {
+          "type": "select",
+          "id": "discount_type",
+          "label": "Discount Type",
+          "default": "percentage",
+          "options": [
+            {
+              "label": "Percentage",
+              "value": "percentage"
+            },
+            {
+              "label": "Amount",
+              "value": "amount"
+            }
+          ]
+        },
+        {
+          "type": "range",
+          "id": "discount_amount",
+          "info": "Number is % of discount",
+          "min": 1,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "label": "Discount Percentage",
+          "default": 10
+        },
+        {
+          "type": "number",
+          "id": "discount_amount_save",
+          "info": "Save discount Amount",
+          "label": "Amount Saved",
+          "default": 10
+        },
+        {
+          "type": "header",
+          "content": "Custom content",
+          "info": "Custom heading and description. Leave blank to default to global content."
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Save with Bundle"
+        },
+        {
+          "type": "text",
+          "id": "copy",
+          "label": "Subcopy",
+          "default": "Add this product with an add-on to your bag and save on the second product."
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

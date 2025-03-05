@@ -1,0 +1,141 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Layout: Checkout
+  - Primary checkout layout file.
+  - Does not take effect until checkout customisation is enabled.
+  - https://shopify.dev/themes/architecture/layouts/checkout-liquid
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign not_production = true
+  assign theme_name = theme.name | downcase
+
+  if theme_name contains 'production'
+    assign not_production = false
+  endif
+
+  assign order_count = 0
+  for item in order.line_items
+    assign order_count = order_count | plus: item.quantity
+  endfor
+
+  assign current_year = 'now' | date: '%Y'
+-%}
+
+<!doctype html>
+<html
+  class="no-js {{ checkout_html_classes }}"
+  dir="{{ direction }}"
+  lang="{{ locale }}"
+>
+  <head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1, height=device-height, minimum-scale=1" name="viewport">
+    <meta content="origin" name="referrer">
+
+    {% render 'datalayer-meta-tags' %}
+
+    <title>{{ page_title }}</title>
+
+    {% render 'site-favicon' %}
+    {% render 'theme-fonts' %}
+
+    {% render 'theme-strings' %}
+    {% render 'theme-variables' %}
+
+    <!-- BEGIN content_for_header -->
+    {% capture shopify_header_content %}
+      {{ content_for_header }}
+    {% endcapture %}
+
+    {% if settings.remove_preview_bar and not_production %}
+      {{ shopify_header_content | remove: 'previewBarInjector.init();' }}
+      <style>#preview-bar-iframe { display: none; }</style>
+    {% else %}
+      {{ shopify_header_content }}
+    {% endif %}
+    <!-- END content_for_header -->
+
+    {{ checkout_stylesheets }}
+    {{ checkout_scripts }}
+
+    {% comment %}
+    ----------------------------------------------------------------------------
+      Theme styles.
+      - Must be placed here to override checkout styles.
+      - All styles are applied as critical to avoid flash of styles.
+    ----------------------------------------------------------------------------
+    {% endcomment %}
+    {% render 'critical-checkout' %}
+    {% render 'gtm' with 'head-script' %}
+  </head>
+
+  {% comment %}
+  -----------------------------------------------------------------------------
+    Default checkout template.
+  -----------------------------------------------------------------------------
+  {% endcomment %}
+  <body>
+    {% render 'gtm' with 'body-script' %}
+    {{ skip_to_content_link }}
+
+    <header class="banner" data-header role="banner">
+      <div class="wrap">
+        {{ content_for_logo }}
+      </div>
+    </header>
+
+    {{ order_summary_toggle }}
+    <div class="content" data-content>
+      <div class="wrap">
+        <div class="main">
+          <header class="main__header" role="banner">
+            <div class="logo-container">
+              <a href="/" aria-label="{{ shop.name }}">
+                {% render 'site-logo' %}
+              </a>
+            </div>
+
+            {{ breadcrumb }}
+            {{ alternative_payment_methods }}
+          </header>
+
+          <main class="main__content" role="main">
+            {{ content_for_layout }}
+          </main>
+        </div>
+
+        <aside class="sidebar" role="complementary">
+          <div class="sidebar__header">
+            {{ content_for_logo }}
+          </div>
+
+          <div class="sidebar__content">
+            {{ content_for_order_summary }}
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    {% section 'site-footer' %}
+
+    {{ tracking_code }}
+
+    {% comment %}
+    -----------------------------------------------------------------------------
+      Custom preview bar.
+    -----------------------------------------------------------------------------
+    {% endcomment %}
+    {% render 'theme-preview-bar' %}
+  </body>
+
+  {% section 'shipping-metadata' %}
+
+  {% comment %}
+  ----------------------------------------------------------------------------
+    Theme scripts.
+  ----------------------------------------------------------------------------
+  {% endcomment %}
+  {% render 'theme-scripts' with layout: 'checkout' %}
+  {% render 'onetrust' %}
+</html>

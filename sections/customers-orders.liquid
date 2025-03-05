@@ -1,0 +1,85 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Customers orders (customers-orders)
+  - Static section.
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.customers-orders.css' | asset_url | stylesheet_tag }}
+
+<section
+  class="customers"
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="customers-orders"
+>
+  <div class="customers-orders critical-component-clear liquid">
+    {% render 'customers-header' with current_url: '/account?view=orders' %}
+
+    <div class="customers__content component-section container">
+      <h1
+        id="section-title-{{ section.id }}"
+        class="customers__title text-heading-2xl"
+      >
+        {{ 'customers.orders.title' | t }}
+      </h1>
+
+      {% if customer.orders.size == 0 %}
+        <p class="customers__text text-body-m">
+          {{ 'customers.orders.no_orders_html' | t }}
+        </p>
+
+      {% else %}
+        {% paginate customer.orders by 20 %}
+          <div class="customers-orders__orders">
+            <div class="customers-orders__orders-header">
+              <p class="customers-orders__label text-body-label">
+                {{ 'customers.order_labels.order_number' | t }}
+              </p>
+
+              <p
+                class="
+                  customers-orders__label
+                  customers-orders__label--span-two
+                  text-body-label
+                "
+              >
+                {{ 'customers.order_labels.date' | t }}
+              </p>
+
+              <p class="customers-orders__label text-body-label">
+                {{ 'customers.order_labels.amount' | t }}
+              </p>
+
+              <p class="customers-orders__label text-body-label">
+                {{ 'customers.order_labels.payment_status' | t }}
+              </p>
+
+              <p class="customers-orders__label text-body-label">
+                {{ 'customers.order_labels.delivery_status' | t }}
+              </p>
+            </div>
+
+            {% for order in customer.orders %}
+              <div class="panel">
+                {% render 'customers-order-details' with
+                  full: true,
+                  order: order,
+                %}
+              </div>
+            {% endfor %}
+          </div>
+
+          {% if paginate.pages > 1 %}
+            {% render 'pagination' with paginate: paginate %}
+          {% endif %}
+        {% endpaginate %}
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Orders",
+  "settings": []
+}
+{% endschema %}

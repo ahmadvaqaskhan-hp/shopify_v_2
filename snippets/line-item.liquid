@@ -1,0 +1,119 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Snippet: Line item (line-item)
+
+  @param {String} [block_class] - Block level class to apply to all elements.
+  @param {String} [class] - Additional classes.
+  @param {Number} [index] - Index for line item, used for animation delay.
+  @param {Boolean|Object} [item] - Line item in cart response or order.
+  @param {Boolean} [loading_animation] - Force the display of the loading state.
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign animation_delay = index | times: 0.15
+  assign is_order_item = false
+  assign line_class = 'line-item '
+  assign line_wrapper_class = 'line-item__wrapper '
+  assign line_body_class = 'line-item__body '
+  assign line_footer_class = 'line-item__footer '
+  assign line_header_class = 'line-item__header '
+  assign line_remove_class = 'line-item__remove icon-button line-item-remove '
+  assign line_title_class = 'line-item__title '
+  assign line_variant_class = 'line-item__variant '
+
+  if block_class
+    assign line_class = line_class | append: '#__line-item ' | replace: '#', block_class
+    assign line_wrapper_class = line_wrapper_class | append: '#__line-item-wrapper ' | replace: '#', block_class
+    assign line_body_class = line_body_class | append: '#__line-item-body ' | replace: '#', block_class
+    assign line_footer_class = line_footer_class | append: '#__line-item-footer ' | replace: '#', block_class
+    assign line_header_class = line_header_class | append: '#__line-item-header ' | replace: '#', block_class
+    assign line_image_class = '#__line-item-image ' | replace: '#', block_class
+    assign line_prices_class = '#__line-item-prices body-2 ' | replace: '#', block_class
+    assign line_quantity_class = '#__line-item-quantity ' | replace: '#', block_class
+    assign line_remove_class = line_remove_class | append: '#__line-item-remove ' | replace: '#', block_class
+    assign line_title_class = line_title_class | append: '#__line-item-title ' | replace: '#', block_class
+    assign line_variant_class = line_variant_class | append: '#__line-item-variant ' | replace: '#', block_class
+  endif
+
+  if loading_animation or item == false or item.id == blank
+    assign line_class = line_class
+  endif
+
+  if item.url_to_remove == blank
+    assign is_order_item = true
+  endif
+-%}
+
+<div
+  class="
+    {{ line_class | strip }}
+    {{ class }}
+    liquid
+  "
+>
+  <div class="{{ line_wrapper_class | strip }}">
+    <a href="{{ item.url }}">
+      {% render 'responsive-image' with
+        animation_delay: animation_delay,
+        wrapper_class: 'line-item__image-container',
+        class: line_image_class,
+        image: item.image,
+        min_max: '225-410',
+        max_width: 1440,
+        max_height: 656,
+        ratio: '3:4',
+        sizes: '80px',
+      %}
+    </a>
+
+    <div
+      class="{{ line_body_class | strip }}"
+      style="animation-delay: {{ animation_delay | default: 0 }}s;"
+    >
+
+      <a
+        class="{{ line_title_class | strip }} subtitle-2"
+        href="{{ item.url }}"
+      >
+        {{ item.product.title }}
+
+        {% if is_order_item %}
+          x{{ item.quantity }}
+        {% endif %}
+      </a>
+
+      {% unless item.product.has_only_default_variant %}
+        <p class="{{ line_variant_class | strip }} body-2">
+          {{ item.variant.title }}
+        </p>
+      {% endunless %}
+
+      {% render 'product-prices' with
+        block_class: 'line-item',
+        class: line_prices_class,
+        price: item.final_line_price,
+        compare_at_price: item.compare_at_line_price,
+      %}
+
+      {% unless is_order_item %}
+        <div class="{{ line_footer_class | strip }}">
+          {% render 'quantity-selector' with
+            animation_delay: animation_delay,
+            block_class: 'line-item',
+            class: line_quantity_class,
+            name: 'updates[]',
+            quantity: item.quantity,
+          %}
+
+          <a
+            class="{{ line_remove_class | strip }} icon-button"
+            href="{{ routes.cart_change_url }}?id={{ item.key }}&quantity=0"
+            aria-label="{{ 'cart.line_item.remove' | t }}"
+          >
+            {% render 'icon-misc' with icon: 'remove' %}
+          </a>
+        </div>
+      {% endunless %}
+    </div>
+  </div>
+</div>

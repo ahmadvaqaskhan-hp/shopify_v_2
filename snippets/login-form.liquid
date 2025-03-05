@@ -1,0 +1,155 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Snippet: Login form
+  - Includes guest login.
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- liquid
+  assign forgot_password_string = 'customers.login.forgot_password_link' | t
+  assign guest_cta_string = 'customers.login.guest.cta' | t
+  assign login_cta_string = 'customers.login.cta' | t
+-%}
+
+<h1
+  id="section-title-{{ section.id }}"
+  class="customers__title text-heading-2xl"
+>
+  {{ 'customers.login.title' | t }}
+</h1>
+
+{% form 'customer_login' %}
+  {%- liquid
+    assign form_errors = ''
+
+    for error in form.errors
+      capture form_errors
+        echo form_errors
+        echo '<p class="customers__error body-2">'
+          render 'icon-misc' with icon: 'error'
+          echo '<span>'
+            unless error == 'form'
+              echo form.errors.translated_fields[error] | capitalize | append: ' '
+            endunless
+              echo form.errors.messages[error] | append: ' '
+          echo '</span>'
+        echo '</p>'
+      endcapture
+    endfor
+  -%}
+
+  {% if form_errors != '' %}
+    <div
+      id="login-errors"
+      class="customers__error-container"
+    >
+      {{ form_errors }}
+    </div>
+  {% endif %}
+
+  <div class="form-group">
+    <div class="form-group__field">
+      <label
+        class="form-group__label text-body-label"
+        for="email"
+      >
+        {{ 'customers.fields.email.label' | t }}
+
+        <abbr
+          title="{{ 'customers.fields.required.label' | t }}"
+          aria-label="{{ 'customers.fields.required.label' | t }}"
+        >
+          {{ 'customers.fields.required.symbol' | t }}
+        </abbr>
+      </label>
+
+      <input
+        {% if form.errors contains 'email' %}
+          class="input-error"
+        {% endif %}
+        autocapitalize="off"
+        autocomplete="email"
+        autocorrect="off"
+        name="customer[email]"
+        placeholder="{{ 'customers.fields.email.placeholder' | t }}"
+        required
+        spellcheck="false"
+        type="email"
+        {% if form.errors contains 'email' %}
+          aria-describedby="login-errors"
+          aria-invalid="true"
+        {% endif %}
+      >
+    </div>
+
+    {% if form.password_needed %}
+      <div class="form-group__field">
+        <label
+          class="form-group__label text-body-label"
+          for="password"
+        >
+          {{ 'customers.fields.password.label' | t }}
+
+          <abbr
+            title="{{ 'customers.fields.required.label' | t }}"
+            aria-label="{{ 'customers.fields.required.label' | t }}"
+          >
+            {{ 'customers.fields.required.symbol' | t }}
+          </abbr>
+        </label>
+
+        <input
+          {% if form.errors contains 'password' %}
+            class="input-error"
+          {% endif %}
+          autocomplete="current-password"
+          name="customer[password]"
+          placeholder="{{ 'customers.fields.password.placeholder' | t }}"
+          required
+          type="password"
+          {% if form.errors contains 'password' %}
+            aria-describedby="login-errors"
+            aria-invalid="true"
+          {% endif %}
+        >
+      </div>
+    {% endif %}
+
+    <div class="form-group__footer">
+      {% render 'btn'
+        block_class: 'customers',
+        label: login_cta_string,
+        type: 'submit',
+      %}
+
+      {% render 'btn'
+        attributes: 'js-forgot-password="toggle"',
+        block_class: 'customers',
+        label: forgot_password_string,
+        modifiers: 'text',
+        show_icon: false,
+        type: 'button',
+      %}
+    </div>
+  </div>
+{% endform %}
+
+{% comment %}
+----------------------------------------------------------------------------
+  Guest login form.
+----------------------------------------------------------------------------
+{% endcomment %}
+{% if shop.checkout.guest_login %}
+  <div class="customers-login__guest">
+    <h2 class="customers__title text-heading-l">
+      {{ 'customers.login.guest.title' | t }}
+    </h2>
+
+    {% form 'guest_login' %}
+      {% render 'btn' with
+        block_class: 'customers',
+        label: guest_cta_string,
+        type: submit,
+      %}
+    {% endform %}
+  </div>
+{% endif %}

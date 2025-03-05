@@ -1,0 +1,167 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Main collection (main-collection)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.main-collection.css' | asset_url | stylesheet_tag }}
+
+{% capture liquid_format %}
+  {% if template.name == 'collection' %}
+
+    {% render 'format-collection' with collection: collection, page_info: true %}
+  {% else %}
+    {}
+  {% endif %}
+{% endcapture %}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "main-collection", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+{% capture banners %}
+  [
+  {% for block in section.blocks %}
+    {{ block.settings | json | escape }}
+  {% unless forloop.last %},{% endunless %}
+  {% endfor %}
+  ]
+{% endcapture %}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="main-collection"
+  data-component-type="load"
+>
+
+  {% if template.name == 'collection' %}
+    {% render 'collection-hero' with
+      collection: collection,
+      hero_text_color: hero_text_color,
+    %}
+  {% endif %}
+
+  <main-collection
+    v-if="getComponentVisible('main-collection')"
+    v-cloak
+    :liquid="{{ liquid_format | strip | strip_newlines }}"
+    :collection="{
+      handle: {{ collection.handle | json | escape }},
+      id: {{ collection.id | json | escape }},
+    }"
+    :banners="{{ banners }}"
+  ></main-collection>
+
+  {% comment %}
+  -----------------------------------------------------------------------------
+    Loading state.
+  -----------------------------------------------------------------------------
+  {% endcomment %}
+  <div v-if="!getComponentActive('main-collection')">
+    <div class="main-collection is-loading critical-component-clear liquid">
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Main Collection",
+  "settings": [],
+  "blocks": [
+    {
+      "type": "inline-banner",
+      "name": "Inline Banner",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "number",
+          "id": "location",
+          "info": "Banner placement on collection grid",
+          "label": "Banner location",
+          "default": 3
+        },
+        {
+          "type": "image_picker",
+          "id": "background_image",
+          "label": "Background image",
+          "info": "Include any image or gif to appear as a background image. Images will take priority over a solid background color. Recommended image size 616 x 856px."
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Background color",
+          "info": "Select a color to appear as a solid background color"
+        },
+        {
+          "type": "header",
+          "content": "Custom content",
+          "info": "Custom heading and description."
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading"
+        },
+        {
+          "type": "text",
+          "id": "copy",
+          "label": "Subcopy"
+        },
+        {
+          "type": "color",
+          "id": "font_color",
+          "label": "Content font color",
+          "default": "#ffffff"
+        },
+        {
+          "type": "select",
+          "id": "heading_font_size",
+          "label": "Heading font size",
+          "default": "h4",
+          "options": [
+            {
+              "label": "Small",
+              "value": "h6"
+            },
+            {
+              "label": "Medium",
+              "value": "h5"
+            },
+            {
+              "label": "Large",
+              "value": "h4"
+            },
+            {
+              "label": "X-Large",
+              "value": "h3"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "cta_copy",
+          "label": "CTA text"
+        },
+        {
+          "type": "url",
+          "id": "cta_url",
+          "label": "CTA url"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Main Collection"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,216 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Gamer gallery (gamer-gallery)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.gamer-gallery.css' | asset_url | stylesheet_tag }}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "gamer-gallery", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+{% capture slides %}
+  [
+  {% for i in (1..10) %}
+    {% assign image = 'image_#' | replace: '#', i %}
+
+    {% if block.settings[image] %}
+      {
+        id: {{ image | json | escape }},
+        settings: {
+          image: {{ block.settings[image]  | replace: 'files/', '' | file_url | json | escape }}
+        }
+      }
+      {% unless forloop.last %},{% endunless %}
+    {% else %}
+      {% continue %}
+    {% endif %}
+  {% endfor %}
+  ]
+{% endcapture %}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="gamer-gallery"
+  data-component-type="scroll"
+>
+  <gamer-gallery
+    v-if="getComponentVisible('gamer-gallery')"
+    v-cloak
+    :liquid="{
+      sectionId: {{ block.type | json | escape }}
+    }"
+    :slides= "{{ slides }}"
+  ></gamer-gallery>
+
+  {% comment %}
+  -----------------------------------------------------------------------------
+    Loading state.
+  -----------------------------------------------------------------------------
+  {% endcomment %}
+  <div v-if="!getComponentActive('gamer-gallery')">
+    <div class="gamer-gallery is-loading critical-component-clear liquid">
+      <div class="container container--wide">
+        <div class="gamer-gallery__carousel swiper-container swiper swiper-horizontal">
+          <div class="swiper-wrapper">
+            {% for i in (1..10) %}
+              {% assign image = 'image_#' | replace: '#', i %}
+
+              {% if block.settings[image] %}
+                <div
+                  id="{{ block.id }}"
+                  class="
+                    gamer-gallery__cell
+                    lazyload
+                    swiper-slide
+                    gamer-gallery__cell--placeholder
+                  "
+                >
+                  {% render 'responsive-image' with
+                    image: block.settings[image],
+                    max_width: 310,
+                    max_height: 310,
+                    wrapper_class: 'gamer-gallery__image',
+                  %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          <div class="swiper-button-next swiper-button-custom">
+            {% render 'icon-direction', icon: 'chevron', direction: 'right' %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{%- comment -%}
+  {% raw %}
+    {% schema %}
+      {
+        "settings": [],
+        "templates": [
+          "pages",
+          "products",
+          "collections",
+          "blogs",
+          "articles"
+        ],
+        "block": {
+          "type": "gamer-gallery-block",
+          "name": "Gamer Gallery",
+          "settings": [
+            {
+              "type": "header",
+              "content": "Gamer 1"
+            },
+            {
+              "type": "image_picker",
+              "id": "image_1",
+              "label": "Gamer image",
+              "info": "Recommended min dimensions: 620 x 620px (.jpg)"
+            },
+            {
+              "type": "header",
+              "content": "Gamer 2"
+            },
+            {
+              "type": "image_picker",
+              "id": "image_2",
+              "label": "Gamer image",
+              "info": "Recommended min dimensions: 620 x 620px (.jpg)"
+            },
+            {
+              "type": "header",
+              "content": "Gamer 3"
+            },
+            {
+              "type": "image_picker",
+              "id": "image_3",
+              "label": "Gamer image",
+              "info": "Recommended min dimensions: 620 x 620px (.jpg)"
+            },
+            {
+              "type": "header",
+              "content": "Gamer 4"
+            },
+            {
+              "type": "image_picker",
+              "id": "image_4",
+              "label": "Gamer image",
+              "info": "Recommended min dimensions: 620 x 620px (.jpg)"
+            },
+            {
+              "type": "header",
+              "content": "Gamer 5"
+            },
+            {
+              "type": "image_picker",
+              "id": "image_5",
+              "label": "Gamer image",
+              "info": "Recommended min dimensions: 620 x 620px (.jpg)"
+            },
+            {
+              "type": "header",
+              "content": "Gamer 6"
+            },
+            {
+              "type": "image_picker",
+              "id": "image_6",
+              "label": "Gamer image",
+              "info": "Recommended min dimensions: 620 x 620px (.jpg)"
+            },
+            {
+              "type": "header",
+              "content": "Gamer 7"
+            },
+            {
+              "type": "image_picker",
+              "id": "image_7",
+              "label": "Gamer image",
+              "info": "Recommended min dimensions: 620 x 620px (.jpg)"
+            },
+            {
+              "type": "header",
+              "content": "Gamer 8"
+            },
+            {
+              "type": "image_picker",
+              "id": "image_8",
+              "label": "Gamer image",
+              "info": "Recommended min dimensions: 620 x 620px (.jpg)"
+            },
+            {
+              "type": "header",
+              "content": "Gamer 9"
+            },
+            {
+              "type": "image_picker",
+              "id": "image_9",
+              "label": "Gamer image",
+              "info": "Recommended min dimensions: 620 x 620px (.jpg)"
+            },
+            {
+              "type": "header",
+              "content": "Gamer 10"
+            },
+            {
+              "type": "image_picker",
+              "id": "image_10",
+              "label": "Gamer image",
+              "info": "Recommended min dimensions: 620 x 620px (.jpg)"
+            }
+          ]
+        }
+      }
+    {% endschema %}
+  {% endraw %}
+{%- endcomment -%}
+

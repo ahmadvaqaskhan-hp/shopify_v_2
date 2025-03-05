@@ -1,0 +1,21 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Template: Cart resource
+  - Used in addition to cart.js request to load additional product details.
+  - Do not remove the `key` value, this is used to match line items.
+  - Inspired by Jon Ashcroft's cart.json.liquid for Emma Bridgewater
+  - https://bitbucket.org/we-make-websites/emma-bridgewater/src/master/src/templates/cart.json.liquid
+-----------------------------------------------------------------------------
+{% endcomment %}
+{%- layout none -%}
+[{%- for item in cart.items -%}
+  {
+    "compare_at_price": {{ item.variant.compare_at_price | json }},
+    "compare_at_line_price": {{ item.variant.compare_at_price | times: item.quantity | json }},
+    "key": {{ item.key | json }},
+    "inventory_management": {{ item.variant.inventory_management | json }},
+    "inventory_policy": {{ item.variant.inventory_policy | json }},
+    "inventory_quantity": {{ item.variant.inventory_quantity | json }},
+    "tags": {{ item.product.tags | json }}
+  }{%- unless forloop.last -%},{%- endunless -%}
+{%- endfor -%}]

@@ -1,0 +1,104 @@
+{% if settings.enable_chat == true %}
+  <!-- BoldChat Customer Monitor HTML v5.00 (Website=Staging Website,ChatButton=Staging Chat Button - HyperX,ChatInvitation=) -->
+  <script type="text/javascript">
+    // Get the region from cookies, default to 'GB'
+    const host = window.location.hostname;
+    let countryCode = window.cnvs.store.storeCode.toLowerCase();
+
+    if (host.includes('row.hyperx.com')) {
+      // if there is a stored cookie
+      const storedCountryCookie = document.cookie.split(';').find(function(el) {
+        return el.includes('redirect_store_settings')
+      });
+
+      if (storedCountryCookie) {
+        const regionByCookie = JSON.parse(decodeURIComponent(storedCountryCookie).match(/{([^}]+)}/g)[0]).loc;
+        countryCode = regionByCookie || 'gb'
+
+      } else {
+        countryCode = 'gb'
+      }
+    }
+
+    var workContext = {
+      lcode: window.cnvs.store.storeLang.toLowerCase(),
+      ccode: countryCode,
+    };
+
+    var LANGMAP = {
+      US: {
+        en: "en-US"
+      },
+      CA: {
+        en: "en-CA",
+        fr: "fr-CA",
+      },
+      ROW: {
+        en: "en-GB",
+        ar: "ar-EG",
+        de: "de-DE",
+        es: "es-ES",
+        fr: "fr-FR",
+        it: "it-IT",
+        ja: "ja-JP",
+        ko: "ko-KR",
+        pl: "pl-PL",
+        "pt-BR": "pt-BR",
+        ru: "ru-RU",
+        th: "th-TH",
+        tr: "tr-TR",
+        vi: "vi-VN",
+        "zh-CN": "zh-CN",
+        "zh-TW": "zh-TW"
+      }
+    },
+    dxCCode = typeof workContext !== "undefined" ? workContext.ccode : "us",
+    dxLang = typeof workContext !== "undefined" ? workContext.lcode : "en";
+
+    window.nanorep = window.nanorep || {};
+    nanorep.floatingWidget = nanorep.floatingWidget || {};
+    nanorep.floatingWidget._calls = nanorep.floatingWidget._calls || [];
+    nanorep.floatingWidget._calls.push(['init', function () {
+
+      window.dataLayer.push({
+        event: 'e_chat',
+        chatAction: 'start'
+      });
+
+      nanorep.floatingWidget.setPreferredTranslationLanguage((function () {
+        var _l;
+        if (dxCCode == "US" && dxLang == "en") {
+          _l = LANGMAP[dxCCode][dxLang];
+        } else if (dxCCode == "CA" && (dxLang == 'en' || dxLang == 'fr')) {
+          _l = LANGMAP[dxCCode][dxLang];
+        } else {
+          _l = LANGMAP.ROW[dxLang];
+        }
+        return _l;
+      })());
+    }]);
+    window._bcvma = window._bcvma || [];
+    _bcvma.push(["setAccountID", "{{ settings. chat_account_id | default: '539992724938006126' }}" ]);
+    _bcvma.push(["setParameter", "WebsiteID", "{{ settings.chat_website_id }}" ]);
+    _bcvma.push(["setParameter", "VisitName", ""]);
+    _bcvma.push(["setParameter", "VisitPhone", ""]);
+    _bcvma.push(["setParameter", "VisitEmail", ""]);
+    _bcvma.push(["setParameter", "VisitRef", ""]);
+    _bcvma.push(["setParameter", "VisitInfo", ""]);
+    _bcvma.push(["setParameter", "CustomUrl", ""]);
+    _bcvma.push(["setParameter", "WindowParameters", ""]);
+    _bcvma.push(["addFloat", { type: "chat", id: "{{ settings.chat_button_style_id }}" }]);
+    _bcvma.push(["pageViewed"]);
+    var bcLoad = function () {
+      if (window.bcLoaded) return; window.bcLoaded = true;
+      var vms = document.createElement("script"); vms.type = "text/javascript"; vms.async = true;
+      vms.src = "https://vmss.boldchat.com/aid/{{ settings. chat_account_id | default: '539992724938006126' }}/bc.vms4/vms.js";
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(vms, s);
+    };
+    if (window.pageViewer && pageViewer.load) pageViewer.load();
+    else if (document.readyState == "complete") bcLoad();
+    else if (window.addEventListener) window.addEventListener('load', bcLoad, false);
+    else window.attachEvent('onload', bcLoad);
+  </script>
+  <!-- /BoldChat Customer Monitor HTML v5.00 -->
+{% endif %}

@@ -1,0 +1,111 @@
+{% comment %}
+-----------------------------------------------------------------------------
+  Snippet / Site: Meta
+  - Contains meta information for SEO purposes.
+  - General, title, description, indexing.
+-----------------------------------------------------------------------------
+{% endcomment %}
+
+{% comment %}
+-----------------------------------------------------------------------------
+  General.
+-----------------------------------------------------------------------------
+{% endcomment %}
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1, height=device-height, minimum-scale=1" name="viewport">
+<meta content="origin" name="referrer">
+
+<link href="{{ canonical_url }}" rel="canonical">
+
+{% comment %}
+-----------------------------------------------------------------------------
+  Locale metafield namespace
+-----------------------------------------------------------------------------
+{% endcomment %}
+{% assign metafield_lang = request.locale.iso_code | downcase %}
+{% assign metafield_namespace = metafield_lang | append: '_product' %}
+{% assign locale_metafields = product.metafields[metafield_namespace] %}
+
+{% comment %}
+-----------------------------------------------------------------------------
+  Title.
+  - Overrides page title for customers templates.
+-----------------------------------------------------------------------------
+{% endcomment %}
+{% capture seo_title %}
+  {% case request.page_type %}
+    {% when 'customers/account' %}
+      {% if template.suffix == 'orders' %}
+        {{ 'customers.orders.title' | t }}
+      {% else %}
+        {{ 'customers.account.title' | t }}
+      {% endif %}
+    {% when 'customers/activate_account' %}
+      {{ 'customers.activate_account.title' | t }}
+    {% when 'customers/addresses' %}
+      {{ 'customers.addresses.title' | t }}
+    {% when 'customers/login' %}
+      {{ 'customers.login.title' | t }}
+    {% when 'customers/order' %}
+      {{ 'customers.order.title' | t: name: order.name }}
+    {% when 'customers/register' %}
+      {{ 'customers.register.title' | t }}
+    {% when 'customers/reset_password' %}
+      {{ 'customers.reset_password.title' | t }}
+    {% when 'list-collections' %}
+      {{ 'list_collections.title' | t }}
+    {% else %}
+      {% if template == 'product' %}
+        {% assign product_meta_title = locale_metafields.meta_title.value %}
+
+        {% if product_meta_title != blank %}
+          {% assign has_product_meta_title = true %}
+          {{ product_meta_title }}
+        {% else %}
+          {{ page_title }}
+        {% endif %}
+      {% else %}
+        {{ page_title }}
+      {% endif %}
+  {% endcase %}
+
+  {% if current_tags %}
+    {% assign meta_tags = current_tags | join: ', ' %} &ndash; {{ 'general.meta.tags' | t: tags: meta_tags }}
+  {% endif %}
+
+  {% if current_page != 1 %}
+    &ndash; {{ 'general.meta.page' | t: page: current_page }}
+  {% endif %}
+
+  {% assign escaped_page_title = page_title | escape %}
+
+  {% unless escaped_page_title contains shop.name or has_product_meta_title == true %}
+    &ndash; {{ shop.name }}
+  {% endunless %}
+{% endcapture %}
+
+<title>{{ seo_title | strip }}</title>
+
+{% comment %}
+-----------------------------------------------------------------------------
+  Description.
+-----------------------------------------------------------------------------
+{% endcomment %}
+{% assign meta_description = page_description %}
+
+{% if template == 'product' %}
+  {% assign meta_description = locale_metafields.meta_desc.value | default: page_description %}
+{% endif %}
+
+{% if meta_description != blank %}
+  <meta content="{{ meta_description | escape }}" name="description">
+{% endif %}
+
+{% render 'datalayer-meta-tags' %}
+
+{% comment %}
+-----------------------------------------------------------------------------
+  Optimisations.
+-----------------------------------------------------------------------------
+{% endcomment %}
+<link href="https://cdn.shopify.com" rel="preconnect">

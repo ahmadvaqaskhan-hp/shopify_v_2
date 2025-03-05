@@ -1,0 +1,132 @@
+{% comment %}
+-----------------------------------------------------------------------------
+Snippet / Theme: Strings
+- Assign string variables for use in JavaScript.
+- Use to define strings that the compiler doesn't find or to override.
+- For consistency cnvs.strings should use snake_case to match Liquid.
+-----------------------------------------------------------------------------
+{% endcomment %}
+<script>
+  window.cnvs = window.cnvs || {}
+
+  window.cnvs.strings = {
+    accessibility: {
+      carousel: {
+        previous: {{ 'accessibility.carousel.previous' | t | json }},
+        next: {{ 'accessibility.carousel.next' | t | json }},
+        slide: {{ 'accessibility.carousel.slide' | t | json }}
+      }
+    },
+    error: {
+      noIconFound: {{ 'accessibility.error.no_icon' | t | json }}
+    },
+    collection: {
+      general: {
+        filterLabel: {{ 'collection.general.filter_label' | t | json }}
+      },
+      filtering: {
+        clearAll: {{ 'collection.filtering.clear_all' | t | json }}
+      }
+    },
+    product: {
+      addToBag: {{ 'product.cta.add_to_bag' | t | json }},
+      cartLimit: {{ 'product.cta.add_to_cart_limit' | t | json }}
+    },
+    search: {
+      stats: {
+        singular: {{ 'search.stats.singular' | t | json }},
+        plural: {{ 'search.stats.plural' | t | json }},
+        none: {{ 'search.stats.none' | t | json }},
+        searchSingular: {{ 'search.stats.search_singular' | t | json }},
+        searchPlural: {{ 'search.stats.search_plural' | t | json }},
+        searchNone: {{ 'search.stats.search_none' | t | json }}
+      }
+    },
+    postal_code_validator: {
+      title: {{ 'postal_code_validator.title' | t | json }},
+      input_placeholder: {{ 'postal_code_validator.input_placeholder' | t | json }},
+      error_message: {{ 'postal_code_validator.error_message' | t | json }},
+      loading_message: {{ 'postal_code_validator.loading_message' | t | json }}
+    },
+    general: {
+      breadcrumb: {
+        home: {{ 'general.breadcrumb.home' | t | json }}
+      },
+      newsletterForm: {
+        label: {{ 'general.newsletter_form.label' | t | json }},
+        placeholder: {{ 'general.newsletter_form.placeholder' | t | json }},
+        confirmation: {{ 'general.newsletter_form.confirmation' | t | json }},
+        submit: {{ 'general.newsletter_form.submit' | t | json }},
+        title: {{ 'general.newsletter_form.title' | t | json }},
+        subtitle: {{ 'general.newsletter_form.subtitle' | t | json }}
+      }
+    },
+    layout: {
+      general: {
+        read_more: {{ 'layout.general.read_more' | t | json }},
+        read_less: {{ 'layout.general.read_less' | t | json }}
+      }
+    },
+    {% if checkout %}
+      checkout : {
+        postal_code_validator: {
+          title: {{ 'postal_code_validator.title' | t | json }},
+          input_placeholder: {{ 'postal_code_validator.input_placeholder' | t | json }},
+          error_message: {{ 'postal_code_validator.error_message' | t | json }},
+          loading_message: {{ 'postal_code_validator.loading_message' | t | json }},
+          submit_button_label: {{ 'postal_code_validator.submit_button_label' | t | json }},
+          valid_zip_message: {{ 'postal_code_validator.valid_zip_message' | t | json }},
+          invalid_zip_message: {{ 'postal_code_validator.invalid_zip_message' | t | json }}
+        },
+        {% if settings.checkout_business_fields %}
+          businessCustomer : {{ 'checkout.business_fields.business__name_label' | t | json }},
+          businessName : {{ 'checkout.business_fields.business_customer_label' | t | json }},
+          businessAbn : {{ 'checkout.business_fields.business_abn_label' | t | json }},
+          businessMaxCharacterSuffix : {{ 'checkout.business_fields.max_character_suffix' | t | json }},{% endif %}
+        {% if settings.checkout_address_field %}
+          addressMaxCharacterSuffix : {{ 'checkout.address_field.max_character_suffix' | t | json }},
+        {% endif %}
+        {% if settings.checkout_name_fields %}
+          nameMaxCharacterSuffix : {{ 'checkout.name_fields.max_character_suffix' | t | json }},
+        {% endif %}
+        terms: {
+          header: {{ 'checkout.terms.header' | t | json }},
+          content: {{ 'checkout.terms.content' | t | json }},
+          yes: {{ 'checkout.terms.yes' | t | json }},
+          no: {{ 'checkout.terms.no' | t | json }},
+          error: {{ 'checkout.terms.error' | t | json }}
+        },
+      },
+    {% endif %}
+    dataLayer: {
+      pageType: {{ request.page_type | json }},
+      pageNameL5: {
+        collection: 'plp',
+        product: 'pdp',
+        page: 'landing',
+        article: 'blog',
+        blog: 'blog',
+        index: 'home',
+        cart: 'cart',
+        customer: 'customer',
+        password: 'customer',
+        search: 'search',
+        '404': 'customer'
+      },
+      pageNameL6: 'accessories',
+      pageNameL7: 'hyperx',{% if checkout %}pageNameL8 : 'checkout',
+      {% else %}
+        {% if request.page_type == 'index' %}
+          pageNameL8 : 'hyperx-store-home',
+        {% elsif request.page_type == '404' %}
+          pageNameL8 : 'error-page',
+        {% else %}
+          pageNameL8 : '{{ request.path | split: '/' | last | split: '?' | first }}',{% endif %}{% endif %}cart: {
+        {% if cart %}
+          itemCount : {{ cart.item_count }},{% endif %}
+      }
+    }
+  }
+</script>
+
+{% render 'theme-compiled-strings' %}

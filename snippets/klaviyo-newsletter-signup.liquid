@@ -1,0 +1,24 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Snippet: Klaviyo newsletter signup form.
+------------------------------------------------------------------------------
+{% endcomment %}
+
+<form
+  id="{{ klaviyo_form_id }}"
+  class="template-register__klaviyo is-hidden"
+  method="post"
+  aria-hidden="true"
+  action="https://manage.kmail-lists.com/ajax/subscriptions/subscribe"
+  accept-charset="UTF-8"
+  js-klaviyo="klaviyoForm"
+>
+  <input type="hidden" name="$fields" value="$source,$email,Accepts Marketing,$consent_method,$consent_form_id">
+  <input type="hidden" name="$list_fields" value="Accepts Marketing">
+  <input type="hidden" name="g" value="{{ settings.klaviyo_list_id }}">
+  <input type="email" name="$email" id="{{ klaviyo_form_id }}_klaviyo_email" js-klaviyo="klaviyoEmail">
+  <input type="hidden" name="$consent_form_id" value="{{ settings.klaviyo_form_id }}">
+  <input type="hidden" name="$consent_method" value="{{ consent_method }}">
+  <input type="hidden" name="Accepts Marketing" id="{{ klaviyo_form_id }}_klaviyo_marketing" value="False" js-klaviyo="klaviyoAcceptsMarketing">
+  <input type="hidden" name="$source" value="{{ source }}">
+</form>

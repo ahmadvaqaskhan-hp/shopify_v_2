@@ -1,0 +1,49 @@
+{% assign metafield_lang = request.locale.iso_code | downcase %}
+{% assign metafield_namespace = metafield_lang | append: '_product' %}
+
+{
+  available: {{ variant.available | json  }},
+  id: {{ variant.id | json  }},
+  barcode: {{ variant.barcode | json  }},
+  compareAtPrice: {
+    amount: {{ variant.compare_at_price | json  }},
+  },
+  ecoTax: {{ variant.metafields.global.eco_tax.value | default: false | json }},
+  featured_image: {
+    id: {{ variant.featured_image.id | json  }},
+    product_id: {{ variant.product.id | json  }},
+    position: {{ variant.featured_image.position | json  }},
+  },
+  lowestPrice: {{ variant.metafields.global.lowest_price.value | remove: '_DELETE_' | default: false | json }},
+  inventory_management: {{ variant.inventory_management | json  }},
+  name: {{ variant.product.title | append : ' - ' | append:  variant.title | json  }},
+  option1: {{ variant.option1 | json  }},
+  option2: {{ variant.option2 | json  }},
+  option3: {{ variant.option3 | json  }},
+  options: [
+    {% for option in variant.options %}
+      {{ option | json  }},
+    {% endfor %}
+  ],
+  selectedOptions: [
+    {% for option in product.options_with_values %}
+      {% if option.selected_value %}
+        {
+          name: {{ option.name | json  }},
+          value: {{ option.selected_value | json  }},
+        },
+      {% endif %}
+    {% endfor %}
+  ],
+  price: {
+    amount: {{ variant.price | json }},
+  },
+  shortDesc: {{ variant.metafields[metafield_namespace].short_desc | default: false }},
+  public_title: {{ variant.title | json  }},
+  requires_selling_plan: {{ variant.requires_selling_plan | json  }},
+  requires_shipping: {{ variant.requires_selling_plan | json  }},
+  sku: {{ variant.sku | json  }},
+  taxable: {{ variant.taxable | json  }},
+  title: {{ variant.title | json  }},
+  weight: {{ variant.weight | json  }},
+}

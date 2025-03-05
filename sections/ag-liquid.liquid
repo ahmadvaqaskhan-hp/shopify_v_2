@@ -1,0 +1,26 @@
+{% comment %}
+Section: Custom Liquid Code Test
+{% endcomment %}
+
+{{section.settings.custom_liquid}}
+
+{% schema %}
+{
+   "name":"custom liquid",
+   "tag":"section",
+   "class":"section",
+   "settings":[
+      {
+         "type":"liquid",
+         "id":"custom_liquid",
+         "label":"Custom Liquid"
+      }
+   ],
+   "presets":[
+      {
+         "name":"custom liquid"
+      }
+   ]
+}
+  
+  {% endschema %}

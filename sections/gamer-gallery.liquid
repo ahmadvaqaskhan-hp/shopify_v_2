@@ -1,0 +1,121 @@
+{% comment %}
+------------------------------------------------------------------------------
+  Section: Gamer gallery (gamer-gallery)
+------------------------------------------------------------------------------
+{% endcomment %}
+{{ 'component.gamer-gallery.css' | asset_url | stylesheet_tag }}
+
+{%- capture section_schema -%}
+  {% if request.design_mode %}
+    {
+      "blocks": [{% for block in section.blocks %} { "type": {{ block.type | json }}, "settings": {{ block.settings | json }} }{% unless forloop.last %},{% endunless %}{% endfor %}],
+      "section": { "id": {{ section.id | json }}, "type": "gamer-gallery", "settings": {{ section.settings | json }} }
+    }
+  {% endif %}
+{%- endcapture -%}
+
+{% capture slides %}
+  [
+  {% for block in section.blocks %}
+    {
+      id: {{ block.id | json | escape }},
+      type: {{ block.type | json | escape }},
+      settings: {{ block.settings | json | escape }}
+    }
+    {% unless forloop.last %},{% endunless %}
+  {% endfor %}
+  ]
+{% endcapture %}
+
+<section
+  aria-labelledby="section-title-{{ section.id }}"
+  data-component-handle="gamer-gallery"
+  data-component-type="scroll"
+  data-section-schema="{% if request.design_mode %}{'blocks': [{% for block in section.blocks %}{ 'type': {{ block.type | json | escape }}, 'settings': {{ block.settings | json | escape }} }{% unless forloop.last %},{% endunless %}{% endfor %}],'section': { 'id': {{ section.id | json | escape }}, 'type': 'gamer-gallery', 'settings': {{ section.settings | json | escape }} }}{% endif %}"
+>
+  <gamer-gallery
+    v-if="getComponentVisible('gamer-gallery')"
+    v-cloak
+    :liquid="{
+      sectionId: {{ section.id | json | escape }}
+    }"
+    :slides= "{{ slides }}"
+  ></gamer-gallery>
+
+  {% comment %}
+  -----------------------------------------------------------------------------
+    Loading state.
+  -----------------------------------------------------------------------------
+  {% endcomment %}
+  <div v-if="!getComponentActive('gamer-gallery')">
+    <div class="gamer-gallery is-loading critical-component-clear liquid">
+      <div class="container container--wide">
+        <div class="gamer-gallery__carousel swiper-container swiper swiper-horizontal">
+          <div class="swiper-wrapper">
+            {% for block in section.blocks %}
+              {% if block.settings.image %}
+                <div
+                  id="{{ block.id }}"
+                  class="
+                    gamer-gallery__cell
+                    lazyload
+                    swiper-slide
+                    gamer-gallery__cell--placeholder
+                  "
+                >
+                  {% render 'responsive-image' with
+                    image: block.settings.image,
+                    max_width: 310,
+                    max_height: 310,
+                    wrapper_class: 'gamer-gallery__image',
+                  %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          <div class="swiper-button-next swiper-button-custom">
+            {% render 'icon-direction', icon: 'chevron', direction: 'right' %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Gamer Gallery",
+  "class": "index-section",
+  "settings": [],
+  "max_blocks": 10,
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Gamer",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Gamer image",
+          "info": "Recommended min dimensions for retina: 620 x 620px (.jpg)"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Gamer Gallery",
+      "category": "Custom Content Block",
+      "blocks": [
+        {
+          "type": "image"
+        },
+        {
+          "type": "image"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

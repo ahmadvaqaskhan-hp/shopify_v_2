@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[7918],{6e3:function(e,n,t){t.r(n),t.d(n,{default:function(){return u}});var u={name:"ProductFootnotes"}}}]);
+//# sourceMappingURL=component.product-footnotes.js.map?v=1733162424563
